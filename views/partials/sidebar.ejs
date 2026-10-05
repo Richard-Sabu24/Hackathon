@@ -1,0 +1,19 @@
+<aside class="sidebar">
+  <div class="brand side-brand">
+    <div class="brand-logo">M</div>
+    <div><strong><%= typeof appName !== 'undefined' ? appName : 'MaskLab' %></strong><span>Media Studio</span></div>
+  </div>
+
+  <nav>
+    <button class="nav-item active" data-page="home"><span>⌂</span> Home</button>
+    <button class="nav-item" data-page="face"><span>▣</span> Image & Video</button>
+    <button class="nav-item" data-page="voice"><span>◖</span> Voice</button>
+    <button class="nav-item" data-page="live"><span>○</span> Live Camera</button>
+    <button class="nav-item" data-page="projects"><span>□</span> Projects</button>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="demo-label">DEMO MODE</div>
+    <button id="logoutBtn" class="logout">Log out</button>
+  </div>
+</aside>

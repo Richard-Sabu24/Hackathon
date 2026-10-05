@@ -1,0 +1,30 @@
+<!-- VOICE -->
+<div id="voice" class="page">
+  <div class="page-heading">
+    <div><span class="eyebrow">VOICE</span><h1>Voice effects</h1><p>Change playback characteristics for a simple voice-processing demonstration.</p></div>
+    <span class="small-status">AUDIO DEMO</span>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div id="audioDrop" class="dropzone">
+        <div class="drop-icon">♪</div>
+        <h3>Upload audio</h3>
+        <p>MP3, WAV, OGG or M4A</p>
+        <button id="audioBrowse" class="outline-btn">Choose audio</button>
+        <input id="audioInput" type="file" accept="audio/*" hidden>
+      </div>
+      <div id="audioInfo" class="file-info hidden"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div><span class="eyebrow">CONTROLS</span><h3>Adjust sound</h3></div><span class="blue-tag">DEMO</span></div>
+      <div class="waveform" id="waveform"></div>
+      <audio id="audioPlayer" controls hidden></audio>
+      <div class="range-control"><label>Pitch <output id="pitchValue">1.00×</output></label><input id="pitch" type="range" min=".7" max="1.35" step=".01" value="1"></div>
+      <div class="range-control"><label>Speed <output id="speedValue">1.00×</output></label><input id="speed" type="range" min=".75" max="1.25" step=".01" value="1"></div>
+      <button id="applyVoice" class="blue-btn full" disabled>Apply effect</button>
+    </div>
+  </div>
+  <div class="info-note"><strong>Presentation note:</strong> This browser prototype changes playback characteristics and does not copy a person's unique voice.</div>
+</div>

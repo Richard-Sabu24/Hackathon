@@ -1,0 +1,30 @@
+<!-- LIVE -->
+<div id="live" class="page">
+  <div class="page-heading">
+    <div><span class="eyebrow">LIVE CAMERA</span><h1>Camera demo</h1><p>Use your webcam with a simple graphic overlay.</p></div>
+    <span id="liveStatus" class="small-status">OFFLINE</span>
+  </div>
+
+  <div class="two-col live-cols">
+    <div class="card">
+      <div class="camera">
+        <video id="camera" autoplay muted playsinline></video>
+        <canvas id="liveCanvas"></canvas>
+        <div id="cameraEmpty" class="camera-empty"><b>○</b><span>Camera is off</span></div>
+        <div class="camera-label">SYNTHETIC DEMO</div>
+      </div>
+      <div class="button-row">
+        <button id="startCamera" class="blue-btn">Start camera</button>
+        <button id="stopCamera" class="outline-btn" disabled>Stop</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div><span class="eyebrow">OVERLAY</span><h3>Choose a look</h3></div></div>
+      <button class="look-option selected"><b>○</b><span><strong>Outline</strong><small>Simple face contour</small></span><i>✓</i></button>
+      <button class="look-option"><b>□</b><span><strong>Soft blur</strong><small>Privacy-style effect</small></span><i>○</i></button>
+      <button class="look-option"><b>+</b><span><strong>Grid</strong><small>Graphic face treatment</small></span><i>○</i></button>
+      <div class="range-control live-range"><label>Intensity <output id="liveIntensityValue">55%</output></label><input id="liveIntensity" type="range" min="10" max="100" value="55"></div>
+    </div>
+  </div>
+</div>

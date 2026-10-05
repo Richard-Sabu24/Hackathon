@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head', { title: typeof title !== 'undefined' ? title : 'MaskLab | Media Studio' }) %>
+</head>
+<body>
+
+<%- include('partials/toast') %>
+
+<%- include('partials/login', { appName: typeof appName !== 'undefined' ? appName : 'MaskLab' }) %>
+
+<!-- APP -->
+<section id="app" class="app hidden">
+  <%- include('partials/sidebar', { appName: typeof appName !== 'undefined' ? appName : 'MaskLab' }) %>
+
+  <main class="main">
+    <%- include('partials/topbar') %>
+
+    <%- include('partials/pages/home') %>
+    <%- include('partials/pages/face') %>
+    <%- include('partials/pages/voice') %>
+    <%- include('partials/pages/live') %>
+    <%- include('partials/pages/projects') %>
+  </main>
+</section>
+
+<%- include('partials/scripts') %>
+</body>
+</html>

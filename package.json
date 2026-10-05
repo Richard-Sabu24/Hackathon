@@ -1,0 +1,25 @@
+{
+  "name": "masklab",
+  "version": "1.0.0",
+  "description": "MaskLab - Media Studio for Image, Video, Voice & Live Camera experiments",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "open": "cmd /c start http://localhost:3000"
+  },
+  "keywords": [
+    "masklab",
+    "media-studio",
+    "express",
+    "ejs",
+    "node"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2"
+  }
+}

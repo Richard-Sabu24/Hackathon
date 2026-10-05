@@ -1,0 +1,38 @@
+<!-- LOGIN -->
+<section id="loginPage" class="login-page">
+  <div class="login-box">
+    <div class="brand">
+      <div class="brand-logo">M</div>
+      <div><strong><%= typeof appName !== 'undefined' ? appName : 'MaskLab' %></strong><span>Media Studio</span></div>
+    </div>
+
+    <div class="login-copy">
+      <span class="eyebrow">WELCOME</span>
+      <h1>Create. Edit. Present.</h1>
+      <p>A simple workspace for image, video and voice experiments.</p>
+    </div>
+
+    <div class="login-tabs">
+      <button class="login-tab active" data-login="account">Email login</button>
+      <button class="login-tab" data-login="guest">Continue as guest</button>
+    </div>
+
+    <form id="accountForm" class="login-form">
+      <label>Email address</label>
+      <input id="email" type="email" placeholder="name@example.com" required>
+      <label>Password</label>
+      <input id="password" type="password" placeholder="Enter your password" required>
+      <button class="blue-btn full" type="submit">Sign in</button>
+      <p class="form-note">Demo only — no account is created.</p>
+    </form>
+
+    <div id="guestForm" class="guest-login hidden">
+      <div class="guest-icon">→</div>
+      <h3>Jump straight in</h3>
+      <p>Use the demo without creating an account.</p>
+      <button id="guestBtn" class="blue-btn full">Continue as guest</button>
+    </div>
+
+    <div class="login-footer">Hackathon presentation build · Demo environment</div>
+  </div>
+</section>

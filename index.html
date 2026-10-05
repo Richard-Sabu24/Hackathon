@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MaskLab | Media Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<!-- LOGIN -->
+<section id="loginPage" class="login-page">
+  <div class="login-box">
+    <div class="brand">
+      <div class="brand-logo">M</div>
+      <div><strong>MaskLab</strong><span>Media Studio</span></div>
+    </div>
+
+    <div class="login-copy">
+      <span class="eyebrow">WELCOME</span>
+      <h1>Create. Edit. Present.</h1>
+      <p>A simple workspace for image, video and voice experiments.</p>
+    </div>
+
+    <div class="login-tabs">
+      <button class="login-tab active" data-login="account">Email login</button>
+      <button class="login-tab" data-login="guest">Continue as guest</button>
+    </div>
+
+    <form id="accountForm" class="login-form">
+      <label>Email address</label>
+      <input id="email" type="email" placeholder="name@example.com" required>
+      <label>Password</label>
+      <input id="password" type="password" placeholder="Enter your password" required>
+      <button class="blue-btn full" type="submit">Sign in</button>
+      <p class="form-note">Demo only — no account is created.</p>
+    </form>
+
+    <div id="guestForm" class="guest-login hidden">
+      <div class="guest-icon">→</div>
+      <h3>Jump straight in</h3>
+      <p>Use the demo without creating an account.</p>
+      <button id="guestBtn" class="blue-btn full">Continue as guest</button>
+    </div>
+
+    <div class="login-footer">Hackathon presentation build · Demo environment</div>
+  </div>
+</section>
+
+<!-- APP -->
+<section id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand side-brand">
+      <div class="brand-logo">M</div>
+      <div><strong>MaskLab</strong><span>Media Studio</span></div>
+    </div>
+
+    <nav>
+      <button class="nav-item active" data-page="home"><span>⌂</span> Home</button>
+      <button class="nav-item" data-page="face"><span>▣</span> Image & Video</button>
+      <button class="nav-item" data-page="voice"><span>◖</span> Voice</button>
+      <button class="nav-item" data-page="live"><span>○</span> Live Camera</button>
+      <button class="nav-item" data-page="projects"><span>□</span> Projects</button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="demo-label">DEMO MODE</div>
+      <button id="logoutBtn" class="logout">Log out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <span id="pageKicker" class="eyebrow">WORKSPACE</span>
+        <h2 id="pageTitle">Home</h2>
+      </div>
+      <div class="profile">
+        <div class="avatar" id="avatar">G</div>
+        <div><strong id="profileName">Guest</strong><small>Demo account</small></div>
+      </div>
+    </header>
+
+    <!-- HOME -->
+    <div id="home" class="page active-page">
+      <div class="welcome">
+        <div>
+          <span class="eyebrow">MEDIA WORKSPACE</span>
+          <h1>Your media,<br><span>your workspace.</span></h1>
+          <p>Upload a file, try an effect and save your result. Everything here is designed for a clean live demonstration.</p>
+          <button class="blue-btn" data-go="face">Create something →</button>
+        </div>
+        <div class="simple-graphic">
+          <div class="graphic-box">M</div>
+          <div class="graphic-line"></div>
+          <div class="graphic-box outline">+</div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <span class="eyebrow">TOOLS</span>
+        <h3>What do you want to work on?</h3>
+      </div>
+
+      <div class="tool-grid">
+        <article class="tool-card" data-go="face">
+          <div class="tool-number">01</div>
+          <h3>Image & Video</h3>
+          <p>Upload an image or video and apply a visible face-mask effect.</p>
+          <span>Open →</span>
+        </article>
+        <article class="tool-card" data-go="voice">
+          <div class="tool-number">02</div>
+          <h3>Voice</h3>
+          <p>Upload audio and preview simple pitch and speed changes.</p>
+          <span>Open →</span>
+        </article>
+        <article class="tool-card" data-go="live">
+          <div class="tool-number">03</div>
+          <h3>Live Camera</h3>
+          <p>Open your camera and demonstrate a graphic face overlay.</p>
+          <span>Open →</span>
+        </article>
+      </div>
+
+      <div class="section-title recent-title">
+        <span class="eyebrow">RECENT</span>
+        <h3>Recent projects</h3>
+      </div>
+      <div id="recentProjects" class="recent-list"></div>
+    </div>
+
+    <!-- IMAGE VIDEO -->
+    <div id="face" class="page">
+      <div class="page-heading">
+        <div><span class="eyebrow">IMAGE & VIDEO</span><h1>Face masking</h1><p>Upload your media and preview a graphic masking treatment.</p></div>
+        <span class="small-status">LOCAL DEMO</span>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div id="faceDrop" class="dropzone">
+            <div class="drop-icon">↑</div>
+            <h3>Upload image or video</h3>
+            <p>JPG, PNG, WEBP, MP4 or WEBM</p>
+            <button id="faceBrowse" class="outline-btn">Choose file</button>
+            <input id="faceInput" type="file" accept="image/*,video/*" hidden>
+          </div>
+          <div id="faceInfo" class="file-info hidden"></div>
+        </div>
+
+        <div class="card preview-card">
+          <div class="card-header"><div><span class="eyebrow">PREVIEW</span><h3>Masked version</h3></div><span class="blue-tag">DEMO</span></div>
+          <div id="facePreview" class="preview empty">
+            <div class="empty-message"><b>◉</b><p>Upload media to see a preview.</p></div>
+          </div>
+          <div class="settings">
+            <label>Mask strength <output id="strengthValue">60%</output></label>
+            <input id="strength" type="range" min="10" max="100" value="60">
+            <div class="button-row">
+              <button id="processFace" class="blue-btn" disabled>Apply mask</button>
+              <button id="saveFace" class="outline-btn" disabled>Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="info-note"><strong>Presentation note:</strong> The preview uses a visible graphic treatment so the result is clearly a synthetic demonstration.</div>
+    </div>
+
+    <!-- VOICE -->
+    <div id="voice" class="page">
+      <div class="page-heading">
+        <div><span class="eyebrow">VOICE</span><h1>Voice effects</h1><p>Change playback characteristics for a simple voice-processing demonstration.</p></div>
+        <span class="small-status">AUDIO DEMO</span>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div id="audioDrop" class="dropzone">
+            <div class="drop-icon">♪</div>
+            <h3>Upload audio</h3>
+            <p>MP3, WAV, OGG or M4A</p>
+            <button id="audioBrowse" class="outline-btn">Choose audio</button>
+            <input id="audioInput" type="file" accept="audio/*" hidden>
+          </div>
+          <div id="audioInfo" class="file-info hidden"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div><span class="eyebrow">CONTROLS</span><h3>Adjust sound</h3></div><span class="blue-tag">DEMO</span></div>
+          <div class="waveform" id="waveform"></div>
+          <audio id="audioPlayer" controls hidden></audio>
+          <div class="range-control"><label>Pitch <output id="pitchValue">1.00×</output></label><input id="pitch" type="range" min=".7" max="1.35" step=".01" value="1"></div>
+          <div class="range-control"><label>Speed <output id="speedValue">1.00×</output></label><input id="speed" type="range" min=".75" max="1.25" step=".01" value="1"></div>
+          <button id="applyVoice" class="blue-btn full" disabled>Apply effect</button>
+        </div>
+      </div>
+      <div class="info-note"><strong>Presentation note:</strong> This browser prototype changes playback characteristics and does not copy a person's unique voice.</div>
+    </div>
+
+    <!-- LIVE -->
+    <div id="live" class="page">
+      <div class="page-heading">
+        <div><span class="eyebrow">LIVE CAMERA</span><h1>Camera demo</h1><p>Use your webcam with a simple graphic overlay.</p></div>
+        <span id="liveStatus" class="small-status">OFFLINE</span>
+      </div>
+
+      <div class="two-col live-cols">
+        <div class="card">
+          <div class="camera">
+            <video id="camera" autoplay muted playsinline></video>
+            <canvas id="liveCanvas"></canvas>
+            <div id="cameraEmpty" class="camera-empty"><b>○</b><span>Camera is off</span></div>
+            <div class="camera-label">SYNTHETIC DEMO</div>
+          </div>
+          <div class="button-row">
+            <button id="startCamera" class="blue-btn">Start camera</button>
+            <button id="stopCamera" class="outline-btn" disabled>Stop</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div><span class="eyebrow">OVERLAY</span><h3>Choose a look</h3></div></div>
+          <button class="look-option selected"><b>○</b><span><strong>Outline</strong><small>Simple face contour</small></span><i>✓</i></button>
+          <button class="look-option"><b>□</b><span><strong>Soft blur</strong><small>Privacy-style effect</small></span><i>○</i></button>
+          <button class="look-option"><b>+</b><span><strong>Grid</strong><small>Graphic face treatment</small></span><i>○</i></button>
+          <div class="range-control live-range"><label>Intensity <output id="liveIntensityValue">55%</output></label><input id="liveIntensity" type="range" min="10" max="100" value="55"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div id="projects" class="page">
+      <div class="page-heading">
+        <div><span class="eyebrow">PROJECTS</span><h1>Your work</h1><p>Projects saved during this browser session.</p></div>
+        <button class="blue-btn" data-go="face">New project</button>
+      </div>
+      <div id="projectGrid" class="project-grid"></div>
+    </div>
+  </main>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>

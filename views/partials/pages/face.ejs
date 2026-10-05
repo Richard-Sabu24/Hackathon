@@ -1,0 +1,36 @@
+<!-- IMAGE VIDEO -->
+<div id="face" class="page">
+  <div class="page-heading">
+    <div><span class="eyebrow">IMAGE & VIDEO</span><h1>Face masking</h1><p>Upload your media and preview a graphic masking treatment.</p></div>
+    <span class="small-status">LOCAL DEMO</span>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div id="faceDrop" class="dropzone">
+        <div class="drop-icon">↑</div>
+        <h3>Upload image or video</h3>
+        <p>JPG, PNG, WEBP, MP4 or WEBM</p>
+        <button id="faceBrowse" class="outline-btn">Choose file</button>
+        <input id="faceInput" type="file" accept="image/*,video/*" hidden>
+      </div>
+      <div id="faceInfo" class="file-info hidden"></div>
+    </div>
+
+    <div class="card preview-card">
+      <div class="card-header"><div><span class="eyebrow">PREVIEW</span><h3>Masked version</h3></div><span class="blue-tag">DEMO</span></div>
+      <div id="facePreview" class="preview empty">
+        <div class="empty-message"><b>◉</b><p>Upload media to see a preview.</p></div>
+      </div>
+      <div class="settings">
+        <label>Mask strength <output id="strengthValue">60%</output></label>
+        <input id="strength" type="range" min="10" max="100" value="60">
+        <div class="button-row">
+          <button id="processFace" class="blue-btn" disabled>Apply mask</button>
+          <button id="saveFace" class="outline-btn" disabled>Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="info-note"><strong>Presentation note:</strong> The preview uses a visible graphic treatment so the result is clearly a synthetic demonstration.</div>
+</div>
