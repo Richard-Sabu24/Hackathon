@@ -1,8 +1,12 @@
 <!-- IMAGE VIDEO -->
 <div id="face" class="page">
   <div class="page-heading">
-    <div><span class="eyebrow">IMAGE & VIDEO</span><h1>Face masking</h1><p>Upload your media and preview a graphic masking treatment.</p></div>
-    <span class="small-status">LOCAL DEMO</span>
+    <div>
+      <span class="eyebrow">IMAGE & VIDEO</span>
+      <h1>Face Masking Studio</h1>
+      <p>Apply real procedural face-mask treatments with tailored male, female, and cyber visual filters.</p>
+    </div>
+    <span class="working-status"><i class="pulse-dot"></i> ACTIVE ENGINE</span>
   </div>
 
   <div class="two-col">
@@ -15,22 +19,164 @@
         <input id="faceInput" type="file" accept="image/*,video/*" hidden>
       </div>
       <div id="faceInfo" class="file-info hidden"></div>
+
+      <!-- Filter Selection Controls -->
+      <div style="margin-top: 18px;">
+        <span class="eyebrow">FILTER CATEGORY</span>
+        <div class="filter-tabs" id="genderTabs">
+          <button class="filter-tab-btn active" data-category="all">All</button>
+          <button class="filter-tab-btn" data-category="male">♂ Male</button>
+          <button class="filter-tab-btn" data-category="female">♀ Female</button>
+          <button class="filter-tab-btn" data-category="fx">⚡ FX</button>
+        </div>
+
+        <span class="eyebrow">SELECT MASK FILTER</span>
+        <div class="presets-grid" id="facePresetsGrid">
+          <!-- Male Presets -->
+          <div class="filter-chip active" data-filter="male-tactical" data-gender="male">
+            <div class="filter-chip-header">
+              <span>Cyber Tactical</span>
+              <span class="chip-tag tag-male">MALE</span>
+            </div>
+            <small>Chiseled jawline HUD with angular targeting geometry</small>
+          </div>
+
+          <div class="filter-chip" data-filter="male-stealth" data-gender="male">
+            <div class="filter-chip-header">
+              <span>Stealth Shadow</span>
+              <span class="chip-tag tag-male">MALE</span>
+            </div>
+            <small>Darkened masculine contour with tactical mesh</small>
+          </div>
+
+          <div class="filter-chip" data-filter="male-spartan" data-gender="male">
+            <div class="filter-chip-header">
+              <span>Spartan Gold</span>
+              <span class="chip-tag tag-male">MALE</span>
+            </div>
+            <small>Aggressive armor plate & golden ocular visor</small>
+          </div>
+
+          <div class="filter-chip" data-filter="male-beard" data-gender="male">
+            <div class="filter-chip-header">
+              <span>Jawline Define</span>
+              <span class="chip-tag tag-male">MALE</span>
+            </div>
+            <small>Lower-third shadow & structured beard line</small>
+          </div>
+
+          <!-- Female Presets -->
+          <div class="filter-chip" data-filter="female-glam" data-gender="female">
+            <div class="filter-chip-header">
+              <span>Cyber Glam</span>
+              <span class="chip-tag tag-female">FEMALE</span>
+            </div>
+            <small>Magenta neon contour, sleek chin & luminous accents</small>
+          </div>
+
+          <div class="filter-chip" data-filter="female-aura" data-gender="female">
+            <div class="filter-chip-header">
+              <span>Ethereal Glow</span>
+              <span class="chip-tag tag-female">FEMALE</span>
+            </div>
+            <small>Soft porcelain bloom with celestial peach halo</small>
+          </div>
+
+          <div class="filter-chip" data-filter="female-lace" data-gender="female">
+            <div class="filter-chip-header">
+              <span>Venetian Lace</span>
+              <span class="chip-tag tag-female">FEMALE</span>
+            </div>
+            <small>Masquerade filigree curves across eyes & cheekbones</small>
+          </div>
+
+          <div class="filter-chip" data-filter="female-neon" data-gender="female">
+            <div class="filter-chip-header">
+              <span>Neon Siren</span>
+              <span class="chip-tag tag-female">FEMALE</span>
+            </div>
+            <small>Vibrant cyan & hot pink synthwave cheek lights</small>
+          </div>
+
+          <!-- FX / Universal Presets -->
+          <div class="filter-chip" data-filter="fx-censor" data-gender="fx">
+            <div class="filter-chip-header">
+              <span>Privacy Mosaic</span>
+              <span class="chip-tag tag-fx">FX</span>
+            </div>
+            <small>Active digital pixelation block censor</small>
+          </div>
+
+          <div class="filter-chip" data-filter="fx-matrix" data-gender="fx">
+            <div class="filter-chip-header">
+              <span>Matrix Stream</span>
+              <span class="chip-tag tag-fx">FX</span>
+            </div>
+            <small>Falling green biometric data streams</small>
+          </div>
+
+          <div class="filter-chip" data-filter="fx-thermal" data-gender="fx">
+            <div class="filter-chip-header">
+              <span>Thermal Heat</span>
+              <span class="chip-tag tag-fx">FX</span>
+            </div>
+            <small>Infrared false-color spectrum mapping</small>
+          </div>
+
+          <div class="filter-chip" data-filter="fx-wireframe" data-gender="fx">
+            <div class="filter-chip-header">
+              <span>Poly Wireframe</span>
+              <span class="chip-tag tag-fx">FX</span>
+            </div>
+            <small>3D biometric polygonal mesh contour</small>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="card preview-card">
-      <div class="card-header"><div><span class="eyebrow">PREVIEW</span><h3>Masked version</h3></div><span class="blue-tag">DEMO</span></div>
-      <div id="facePreview" class="preview empty">
-        <div class="empty-message"><b>◉</b><p>Upload media to see a preview.</p></div>
+      <div class="card-header">
+        <div>
+          <span class="eyebrow">CANVAS PROCESSOR</span>
+          <h3 id="currentFilterTitle">Active Filter: Cyber Tactical (Male)</h3>
+        </div>
+        <span class="blue-tag" id="filterStatusTag">READY</span>
       </div>
+
+      <div id="facePreview" class="preview empty">
+        <div class="empty-message"><b>◉</b><p>Upload media to preview and apply filters.</p></div>
+      </div>
+
       <div class="settings">
-        <label>Mask strength <output id="strengthValue">60%</output></label>
-        <input id="strength" type="range" min="10" max="100" value="60">
+        <div class="range-control" style="margin: 8px 0;">
+          <label>Mask Strength <output id="strengthValue">75%</output></label>
+          <input id="strength" type="range" min="10" max="100" value="75">
+        </div>
+
+        <div class="range-control" style="margin: 8px 0;">
+          <label>Coverage / Scale <output id="maskScaleValue">100%</output></label>
+          <input id="maskScale" type="range" min="50" max="160" value="100">
+        </div>
+
+        <div class="range-control" style="margin: 8px 0 14px;">
+          <label>Glow Color Theme</label>
+          <div style="display: flex; gap: 8px; margin-top: 6px;">
+            <button class="color-dot active" data-color="#2677ff" style="width: 24px; height: 24px; border-radius: 50%; background: #2677ff; border: 2px solid #fff; cursor: pointer;"></button>
+            <button class="color-dot" data-color="#e040fb" style="width: 24px; height: 24px; border-radius: 50%; background: #e040fb; border: 2px solid transparent; cursor: pointer;"></button>
+            <button class="color-dot" data-color="#00e5ff" style="width: 24px; height: 24px; border-radius: 50%; background: #00e5ff; border: 2px solid transparent; cursor: pointer;"></button>
+            <button class="color-dot" data-color="#ffb300" style="width: 24px; height: 24px; border-radius: 50%; background: #ffb300; border: 2px solid transparent; cursor: pointer;"></button>
+            <button class="color-dot" data-color="#00e676" style="width: 24px; height: 24px; border-radius: 50%; background: #00e676; border: 2px solid transparent; cursor: pointer;"></button>
+            <button class="color-dot" data-color="#ff1744" style="width: 24px; height: 24px; border-radius: 50%; background: #ff1744; border: 2px solid transparent; cursor: pointer;"></button>
+          </div>
+        </div>
+
         <div class="button-row">
-          <button id="processFace" class="blue-btn" disabled>Apply mask</button>
-          <button id="saveFace" class="outline-btn" disabled>Save</button>
+          <button id="processFace" class="blue-btn" disabled>Render Filter</button>
+          <button id="saveFace" class="outline-btn" disabled>Save to Work</button>
+          <button id="downloadFace" class="download-link-btn" disabled>Download ⤓</button>
         </div>
       </div>
     </div>
   </div>
-  <div class="info-note"><strong>Presentation note:</strong> The preview uses a visible graphic treatment so the result is clearly a synthetic demonstration.</div>
+  <div class="info-note"><strong>Studio Engine:</strong> Procedural graphics pipeline renders custom male, female, and cyber synthetic treatments directly onto uploaded assets.</div>
 </div>

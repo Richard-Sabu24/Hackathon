@@ -1,8 +1,12 @@
 <!-- LIVE -->
 <div id="live" class="page">
   <div class="page-heading">
-    <div><span class="eyebrow">LIVE CAMERA</span><h1>Camera demo</h1><p>Use your webcam with a simple graphic overlay.</p></div>
-    <span id="liveStatus" class="small-status">OFFLINE</span>
+    <div>
+      <span class="eyebrow">LIVE CAMERA</span>
+      <h1>Real-Time Camera Filters</h1>
+      <p>Stream your webcam with real-time procedural filters: Male Tactical HUD, Female Cyber Glam, Thermal, and Matrix effects.</p>
+    </div>
+    <span id="liveStatus" class="working-status"><i class="pulse-dot"></i> CAMERA OFFLINE</span>
   </div>
 
   <div class="two-col live-cols">
@@ -11,20 +15,77 @@
         <video id="camera" autoplay muted playsinline></video>
         <canvas id="liveCanvas"></canvas>
         <div id="cameraEmpty" class="camera-empty"><b>○</b><span>Camera is off</span></div>
-        <div class="camera-label">SYNTHETIC DEMO</div>
+        <div class="camera-label" id="cameraFilterBadge">MALE TACTICAL HUD</div>
       </div>
-      <div class="button-row">
+      <div class="camera-controls-bar">
         <button id="startCamera" class="blue-btn">Start camera</button>
+        <button id="capturePhoto" class="capture-btn" disabled>📸 Take Snapshot</button>
         <button id="stopCamera" class="outline-btn" disabled>Stop</button>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-header"><div><span class="eyebrow">OVERLAY</span><h3>Choose a look</h3></div></div>
-      <button class="look-option selected"><b>○</b><span><strong>Outline</strong><small>Simple face contour</small></span><i>✓</i></button>
-      <button class="look-option"><b>□</b><span><strong>Soft blur</strong><small>Privacy-style effect</small></span><i>○</i></button>
-      <button class="look-option"><b>+</b><span><strong>Grid</strong><small>Graphic face treatment</small></span><i>○</i></button>
-      <div class="range-control live-range"><label>Intensity <output id="liveIntensityValue">55%</output></label><input id="liveIntensity" type="range" min="10" max="100" value="55"></div>
+      <div class="card-header">
+        <div>
+          <span class="eyebrow">LIVE FILTERS</span>
+          <h3>Select Filter Style</h3>
+        </div>
+        <span class="blue-tag" id="liveFilterTag">MALE / FEMALE</span>
+      </div>
+
+      <div style="display: grid; gap: 7px; max-height: 380px; overflow-y: auto; padding-right: 2px;">
+        <button class="look-option selected" data-live-filter="male-hud">
+          <b style="color: #5bb3ff;">♂</b>
+          <span><strong>Male Tactical HUD</strong><small>Combat visor, angular jaw telemetry & reticle</small></span>
+          <i>✓</i>
+        </button>
+
+        <button class="look-option" data-live-filter="female-glam">
+          <b style="color: #ff7be5;">♀</b>
+          <span><strong>Female Cyber Glam</strong><small>Magenta aesthetic contour, glow & halo</small></span>
+          <i>○</i>
+        </button>
+
+        <button class="look-option" data-live-filter="pixelate">
+          <b style="color: #ffd166;">▦</b>
+          <span><strong>Privacy Mosaic</strong><small>Dynamic real-time face pixelation censor</small></span>
+          <i>○</i>
+        </button>
+
+        <button class="look-option" data-live-filter="matrix">
+          <b style="color: #00e676;">⚡</b>
+          <span><strong>Matrix Rain</strong><small>Cascading digital green data streams</small></span>
+          <i>○</i>
+        </button>
+
+        <button class="look-option" data-live-filter="thermal">
+          <b style="color: #ff3d00;">♨</b>
+          <span><strong>Thermal Heatmap</strong><small>Infrared false-color spectrum overlay</small></span>
+          <i>○</i>
+        </button>
+
+        <button class="look-option" data-live-filter="wireframe">
+          <b style="color: #00e5ff;">◇</b>
+          <span><strong>Neon Wireframe</strong><small>Biometric contour & tracking nodes</small></span>
+          <i>○</i>
+        </button>
+
+        <button class="look-option" data-live-filter="blur">
+          <b style="color: #90caf9;">□</b>
+          <span><strong>Soft Privacy Blur</strong><small>Smooth aesthetic face diffusion</small></span>
+          <i>○</i>
+        </button>
+      </div>
+
+      <div class="range-control live-range" style="margin-top: 14px;">
+        <label>Filter Intensity <output id="liveIntensityValue">65%</output></label>
+        <input id="liveIntensity" type="range" min="15" max="100" value="65">
+      </div>
+
+      <div class="range-control live-range" style="margin-top: 8px;">
+        <label>Effect Scale <output id="liveScaleValue">100%</output></label>
+        <input id="liveScale" type="range" min="60" max="150" value="100">
+      </div>
     </div>
   </div>
 </div>

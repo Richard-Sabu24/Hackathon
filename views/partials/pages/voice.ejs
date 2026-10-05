@@ -1,8 +1,12 @@
 <!-- VOICE -->
 <div id="voice" class="page">
   <div class="page-heading">
-    <div><span class="eyebrow">VOICE</span><h1>Voice effects</h1><p>Change playback characteristics for a simple voice-processing demonstration.</p></div>
-    <span class="small-status">AUDIO DEMO</span>
+    <div>
+      <span class="eyebrow">VOICE & DSP</span>
+      <h1>Voice Sound Filters</h1>
+      <p>Transform audio with real-time DSP filters: Deep Male, High Female, Cyber Robot, Radio, Echo, and Alien effects.</p>
+    </div>
+    <span class="working-status"><i class="pulse-dot"></i> DSP ENGINE READY</span>
   </div>
 
   <div class="two-col">
@@ -10,21 +14,110 @@
       <div id="audioDrop" class="dropzone">
         <div class="drop-icon">♪</div>
         <h3>Upload audio</h3>
-        <p>MP3, WAV, OGG or M4A</p>
+        <p>MP3, WAV, OGG, M4A or AAC</p>
         <button id="audioBrowse" class="outline-btn">Choose audio</button>
         <input id="audioInput" type="file" accept="audio/*" hidden>
       </div>
       <div id="audioInfo" class="file-info hidden"></div>
+
+      <!-- Sound Filters Preset Grid -->
+      <div style="margin-top: 18px;">
+        <span class="eyebrow">SELECT SOUND FILTER</span>
+        <div class="sound-presets-grid" id="soundPresetsGrid">
+          <div class="sound-card active" data-sound="normal">
+            <span class="sound-icon">🎧</span>
+            <strong>Studio Clean</strong>
+            <small>Natural bypass</small>
+          </div>
+
+          <div class="sound-card" data-sound="deep-male">
+            <span class="sound-icon">🎙️</span>
+            <strong>Deep Male</strong>
+            <small>Low baritone bass</small>
+          </div>
+
+          <div class="sound-card" data-sound="high-female">
+            <span class="sound-icon">✨</span>
+            <strong>High Female</strong>
+            <small>Air sparkle lift</small>
+          </div>
+
+          <div class="sound-card" data-sound="robot">
+            <span class="sound-icon">🤖</span>
+            <strong>Cyber Robot</strong>
+            <small>Vocoder ring mod</small>
+          </div>
+
+          <div class="sound-card" data-sound="radio">
+            <span class="sound-icon">📻</span>
+            <strong>Walkie-Talkie</strong>
+            <small>Crunchy radio AM</small>
+          </div>
+
+          <div class="sound-card" data-sound="echo">
+            <span class="sound-icon">🏛️</span>
+            <strong>Cathedral</strong>
+            <small>Cavernous reverb</small>
+          </div>
+
+          <div class="sound-card" data-sound="megaphone">
+            <span class="sound-icon">📢</span>
+            <strong>Megaphone</strong>
+            <small>Mid PA projection</small>
+          </div>
+
+          <div class="sound-card" data-sound="alien">
+            <span class="sound-icon">🛸</span>
+            <strong>Alien Glitch</strong>
+            <small>Modulated cosmos</small>
+          </div>
+
+          <div class="sound-card" data-sound="bass808">
+            <span class="sound-icon">🔊</span>
+            <strong>Sub 808 Bass</strong>
+            <small>Heavy 60Hz drop</small>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="card">
-      <div class="card-header"><div><span class="eyebrow">CONTROLS</span><h3>Adjust sound</h3></div><span class="blue-tag">DEMO</span></div>
+      <div class="card-header">
+        <div>
+          <span class="eyebrow">ACTIVE DSP</span>
+          <h3 id="currentVoiceTitle">Filter: Studio Clean</h3>
+        </div>
+        <span class="blue-tag" id="voiceStatusTag">DSP READY</span>
+      </div>
+
       <div class="waveform" id="waveform"></div>
-      <audio id="audioPlayer" controls hidden></audio>
-      <div class="range-control"><label>Pitch <output id="pitchValue">1.00×</output></label><input id="pitch" type="range" min=".7" max="1.35" step=".01" value="1"></div>
-      <div class="range-control"><label>Speed <output id="speedValue">1.00×</output></label><input id="speed" type="range" min=".75" max="1.25" step=".01" value="1"></div>
-      <button id="applyVoice" class="blue-btn full" disabled>Apply effect</button>
+      <audio id="audioPlayer" controls hidden style="width: 100%; margin-bottom: 12px;"></audio>
+
+      <div class="range-control">
+        <label>Pitch Modulation <output id="pitchValue">1.00×</output></label>
+        <input id="pitch" type="range" min=".65" max="1.45" step=".01" value="1">
+      </div>
+
+      <div class="range-control">
+        <label>Playback Speed <output id="speedValue">1.00×</output></label>
+        <input id="speed" type="range" min=".70" max="1.30" step=".01" value="1">
+      </div>
+
+      <div class="range-control">
+        <label>Filter Depth / Warmth <output id="depthValue">70%</output></label>
+        <input id="filterDepth" type="range" min="10" max="100" value="70">
+      </div>
+
+      <div class="range-control">
+        <label>Echo & Reverb Mix <output id="echoMixValue">20%</output></label>
+        <input id="echoMix" type="range" min="0" max="100" value="20">
+      </div>
+
+      <div class="button-row" style="margin-top: 15px;">
+        <button id="applyVoice" class="blue-btn" disabled>Apply Filter</button>
+        <button id="saveVoice" class="outline-btn" disabled>Save to Work</button>
+      </div>
     </div>
   </div>
-  <div class="info-note"><strong>Presentation note:</strong> This browser prototype changes playback characteristics and does not copy a person's unique voice.</div>
+  <div class="info-note"><strong>Web Audio DSP:</strong> Multi-stage audio processing pipeline executes real-time biquad filtering, telephone bandpass, dynamic echo delay, and frequency modulation.</div>
 </div>
