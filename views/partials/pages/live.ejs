@@ -1,91 +1,223 @@
-<!-- LIVE -->
+<!-- LIVE CAMERA MORPHING -->
 <div id="live" class="page">
   <div class="page-heading">
     <div>
-      <span class="eyebrow">LIVE CAMERA MORPHING</span>
-      <h1>Real-Time Face Morph Camera</h1>
-      <p>Stream your webcam and morph your face live in real time into selected male and female personas or custom identities.</p>
+      <span class="eyebrow">FEATURE 3 · REAL-TIME COMPUTER VISION</span>
+      <h1>Live Camera Face Morphing & Recording</h1>
+      <p>Stream your webcam with real-time facial landmark tracking. Your face is transformed continuously frame-by-frame into the locked target identity and recorded directly to high-definition WebM video.</p>
     </div>
-    <span id="liveStatus" class="working-status"><i class="pulse-dot"></i> CAMERA OFFLINE</span>
+    <div class="header-badges">
+      <span id="liveStatus" class="working-status"><i class="pulse-dot"></i> CAMERA STANDBY</span>
+      <span id="fpsBadge" class="fps-pill">FPS: --</span>
+    </div>
   </div>
 
-  <div class="two-col live-cols">
-    <div class="card">
-      <div class="camera">
+  <div class="two-col live-camera-layout">
+    <!-- LEFT: MAIN CINEMATIC CAMERA STAGE -->
+    <div class="card camera-stage-card">
+      <div class="camera-viewport-wrap" id="cameraViewport">
+        <!-- Live Video Element (Hidden or mirrored source) -->
         <video id="camera" autoplay muted playsinline></video>
+
+        <!-- Transformed Morph Rendering Canvas -->
         <canvas id="liveCanvas"></canvas>
-        <div id="cameraEmpty" class="camera-empty"><b>○</b><span>Camera is off</span></div>
-        <div class="camera-label" id="cameraFilterBadge">LIVE MORPH: MARCUS (MALE)</div>
+
+        <!-- Camera Off Empty State -->
+        <div id="cameraEmpty" class="camera-empty-state">
+          <div class="empty-icon-wrap">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </div>
+          <h3>Webcam is Currently Inactive</h3>
+          <p>Click "Start Camera" below to grant camera access and activate real-time face tracking.</p>
+          <button id="startCameraHeroBtn" class="blue-btn small-btn" type="button">Start Camera Now</button>
+        </div>
+
+        <!-- Live Camera HUD Overlays -->
+        <div class="camera-hud-layer" id="cameraHudLayer">
+          <!-- Top Left: Active Target Info -->
+          <div class="hud-pill top-left">
+            <span class="hud-dot green"></span>
+            <span id="hudTargetText">TARGET: MARCUS (LOCKED)</span>
+          </div>
+
+          <!-- Top Right: Real-time Telemetry & Tracking Status -->
+          <div class="hud-telemetry-cluster top-right">
+            <div id="hudFaceDetected" class="telemetry-item inactive">Face Detected ✕</div>
+            <div id="hudTrackingActive" class="telemetry-item inactive">Tracking Active ✕</div>
+            <div id="hudMorphActive" class="telemetry-item inactive">Morph Active ✕</div>
+          </div>
+
+          <!-- Bottom Left: Recording Timer Badge -->
+          <div id="recordingTimerBadge" class="recording-badge hidden">
+            <span class="rec-red-dot"></span>
+            <span id="recTimerText">REC 00:00</span>
+          </div>
+
+          <!-- Bottom Right: Responsible AI Watermark -->
+          <div class="camera-watermark">
+            <span>AI TRANSFORMED</span>
+          </div>
+        </div>
       </div>
-      <div class="camera-controls-bar">
-        <button id="startCamera" class="blue-btn">Start camera</button>
-        <button id="capturePhoto" class="capture-btn" disabled>📸 Capture Morphed Photo</button>
-        <button id="stopCamera" class="outline-btn" disabled>Stop</button>
+
+      <!-- Camera Action Controls Bar -->
+      <div class="camera-controls-toolbar">
+        <div class="toolbar-primary-group">
+          <!-- Start / Stop Camera -->
+          <button id="startCamera" class="blue-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <span>Start Camera</span>
+          </button>
+          <button id="stopCamera" class="outline-btn" disabled>
+            <span>Stop Camera</span>
+          </button>
+
+          <!-- Start / Stop Morph -->
+          <button id="toggleMorphBtn" class="cyan-btn" disabled>
+            <span id="toggleMorphIcon">⚡</span>
+            <span id="toggleMorphText">Start Morph</span>
+          </button>
+        </div>
+
+        <div class="toolbar-recording-group">
+          <!-- Live Canvas Stream Recording -->
+          <button id="startRecordBtn" class="danger-btn record-action-btn" disabled>
+            <span class="record-red-circle"></span>
+            <span>Record Video</span>
+          </button>
+          <button id="stopRecordBtn" class="outline-btn" disabled>
+            <span>Stop Recording</span>
+          </button>
+
+          <!-- Snapshot Capture -->
+          <button id="capturePhoto" class="outline-btn" disabled title="Capture high-res morphed frame">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="4"/><path d="M5 7h2l2-3h6l2 3h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/></svg>
+            <span>Capture Frame</span>
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="card">
+    <!-- RIGHT: LOCKED TARGET FACE & REAL-TIME TUNING -->
+    <div class="card live-sidebar-card">
       <div class="card-header">
+        <div class="card-title-group">
+          <span class="eyebrow">LOCKED IDENTITY</span>
+          <h3>Target Face</h3>
+        </div>
+        <button id="changeTargetBtn" class="outline-btn tiny-btn" type="button">Change Target</button>
+      </div>
+
+      <!-- Small Preview Card of Currently Locked Target -->
+      <div class="locked-target-preview-card" id="lockedTargetCard">
+        <div class="target-avatar-wrap">
+          <img id="lockedTargetImg" src="/images/personas/male_marcus.jpg" alt="Locked Target Face">
+          <div class="locked-badge-pill">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>LOCKED</span>
+          </div>
+        </div>
+        <div class="locked-target-details">
+          <strong id="lockedTargetName">Marcus</strong>
+          <span class="chip-tag tag-male" id="lockedTargetGenderTag">♂ MALE IDENTITY</span>
+          <p id="lockedTargetDesc">Target face follows head rotation, tilt, scale, and facial expression in real time.</p>
+        </div>
+      </div>
+
+      <!-- Target Selection Grid (Can be toggled or selected anytime) -->
+      <div class="live-target-selector-box" id="liveTargetSelectorBox">
+        <span class="section-sublabel">CHOOSE TARGET PERSONA</span>
+        <div class="persona-selector-grid mini-grid" id="livePersonaGrid">
+          <div class="persona-card active" data-live-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-name="Marcus" data-gender="male">
+            <img src="/images/personas/male_marcus.jpg" alt="Marcus" class="persona-avatar-img">
+            <div class="persona-info"><strong>Marcus</strong><small class="chip-tag tag-male">♂ MALE</small></div>
+          </div>
+          <div class="persona-card" data-live-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-name="Viktor" data-gender="male">
+            <img src="/images/personas/male_viktor.jpg" alt="Viktor" class="persona-avatar-img">
+            <div class="persona-info"><strong>Viktor</strong><small class="chip-tag tag-male">♂ MALE</small></div>
+          </div>
+          <div class="persona-card female-persona" data-live-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-name="Elena" data-gender="female">
+            <img src="/images/personas/female_elena.jpg" alt="Elena" class="persona-avatar-img">
+            <div class="persona-info"><strong>Elena</strong><small class="chip-tag tag-female">♀ FEMALE</small></div>
+          </div>
+          <div class="persona-card female-persona" data-live-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-name="Sophia" data-gender="female">
+            <img src="/images/personas/female_sophia.jpg" alt="Sophia" class="persona-avatar-img">
+            <div class="persona-info"><strong>Sophia</strong><small class="chip-tag tag-female">♀ FEMALE</small></div>
+          </div>
+        </div>
+
+        <!-- Custom Upload for Live Target -->
+        <label for="liveCustomTargetInput" class="target-upload-box small-upload-box" style="margin-top: 8px;">
+          <span class="target-upload-icon">+</span>
+          <div class="target-upload-text">
+            <strong>Upload Custom Live Target Face</strong>
+            <span>Use any portrait photo for live tracking</span>
+          </div>
+          <input id="liveCustomTargetInput" type="file" accept="image/*" hidden>
+        </label>
+      </div>
+
+      <!-- Real-Time Sliders for Live Morph -->
+      <div class="live-controls-group" style="margin-top: 14px;">
+        <span class="section-sublabel">REAL-TIME BLEND CONTROLS</span>
+        
+        <div class="range-control live-range">
+          <div class="morph-slider-header">
+            <span class="morph-badge badge-source">WEBCAM (0%)</span>
+            <span class="slider-title">Live Morph Ratio: <output id="liveIntensityValue">65%</output></span>
+            <span class="morph-badge badge-target">TARGET (100%)</span>
+          </div>
+          <input id="liveIntensity" class="range-slider" type="range" min="15" max="100" value="65">
+        </div>
+
+        <div class="range-control live-range" style="margin-top: 8px;">
+          <div class="morph-slider-header">
+            <span class="slider-title">Mesh Alignment Scale: <output id="liveScaleValue">100%</output></span>
+            <small class="slider-desc">Proportional facial keypoint sizing</small>
+          </div>
+          <input id="liveScale" class="range-slider" type="range" min="70" max="140" value="100">
+        </div>
+
+        <div class="range-control live-range" style="margin-top: 8px;">
+          <div class="morph-slider-header">
+            <span class="slider-title">Skin Tone Harmonization: <output id="liveSkinToneValue">80%</output></span>
+            <small class="slider-desc">Webcam lighting temperature match</small>
+          </div>
+          <input id="liveSkinTone" class="range-slider" type="range" min="10" max="100" value="80">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recorded Video Preview Modal / Drawer -->
+  <div id="recordingModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
         <div>
-          <span class="eyebrow">TARGET IDENTITY</span>
-          <h3>Morph Live Into:</h3>
+          <span class="eyebrow">RECORDED OUTPUT</span>
+          <h3>Live Transformed Video Preview</h3>
         </div>
-        <span class="blue-tag" id="liveFilterTag">REAL-TIME BLEND</span>
+        <button id="closeModalBtn" class="modal-close-btn" type="button">✕</button>
       </div>
-
-      <!-- Live Persona Selection -->
-      <div class="persona-selector-grid" id="livePersonaGrid" style="grid-template-columns: repeat(2, 1fr); gap: 8px;">
-        <div class="persona-card active" data-live-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-name="Marcus (Chiseled Male)">
-          <img src="/images/personas/male_marcus.jpg" alt="Marcus" class="persona-avatar-img">
-          <div class="persona-info">
-            <strong>Marcus</strong>
-            <small class="chip-tag tag-male">♂ CHISELED MALE</small>
-          </div>
-        </div>
-
-        <div class="persona-card" data-live-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-name="Viktor (Bearded Male)">
-          <img src="/images/personas/male_viktor.jpg" alt="Viktor" class="persona-avatar-img">
-          <div class="persona-info">
-            <strong>Viktor</strong>
-            <small class="chip-tag tag-male">♂ BEARDED MALE</small>
-          </div>
-        </div>
-
-        <div class="persona-card female-persona" data-live-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-name="Elena (Sleek Female)">
-          <img src="/images/personas/female_elena.jpg" alt="Elena" class="persona-avatar-img">
-          <div class="persona-info">
-            <strong>Elena</strong>
-            <small class="chip-tag tag-female">♀ SLEEK FEMALE</small>
-          </div>
-        </div>
-
-        <div class="persona-card female-persona" data-live-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-name="Sophia (Radiant Female)">
-          <img src="/images/personas/female_sophia.jpg" alt="Sophia" class="persona-avatar-img">
-          <div class="persona-info">
-            <strong>Sophia</strong>
-            <small class="chip-tag tag-female">♀ RADIANT FEMALE</small>
-          </div>
+      <div class="modal-body">
+        <video id="recordedVideoPlayer" controls autoplay loop playsinline class="recorded-preview-video"></video>
+        <div class="recording-meta-row">
+          <div><span class="eyebrow">TARGET IDENTITY:</span> <strong id="recordedTargetName">Marcus</strong></div>
+          <div><span class="eyebrow">FORMAT:</span> <strong>WebM (Canvas Stream)</strong></div>
+          <div><span class="eyebrow">DISCLOSURE:</span> <strong class="badge-pill cyan">AI TRANSFORMED</strong></div>
         </div>
       </div>
-
-      <!-- Live Morph Mix Slider -->
-      <div class="range-control live-range" style="margin-top: 15px;">
-        <div class="morph-slider-header">
-          <span class="morph-badge badge-source">WEBCAM (0%)</span>
-          <strong style="color: #fff; font-size: 11px;">Live Morph Ratio: <output id="liveIntensityValue">65%</output></strong>
-          <span class="morph-badge badge-target">TARGET PERSON (100%)</span>
-        </div>
-        <input id="liveIntensity" type="range" min="15" max="100" value="65">
-      </div>
-
-      <div class="range-control live-range" style="margin-top: 8px;">
-        <label>Face Alignment Scale <output id="liveScaleValue">100%</output></label>
-        <input id="liveScale" type="range" min="60" max="150" value="100">
-      </div>
-
-      <div class="range-control live-range" style="margin-top: 8px;">
-        <label>Skin Tone Blend <output id="liveSkinToneValue">80%</output></label>
-        <input id="liveSkinTone" type="range" min="10" max="100" value="80">
+      <div class="modal-footer">
+        <button id="downloadRecordedVideoBtn" class="blue-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <span>Download Video (.webm)</span>
+        </button>
+        <button id="saveRecordedVideoBtn" class="outline-btn">
+          <span>Save to Workspace</span>
+        </button>
+        <button id="dismissModalBtn" class="ghost-btn">
+          <span>Close</span>
+        </button>
       </div>
     </div>
   </div>

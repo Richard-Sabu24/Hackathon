@@ -1,31 +1,94 @@
-<!-- IMAGE VIDEO -->
+<!-- PHOTO FACE MORPHING -->
 <div id="face" class="page">
   <div class="page-heading">
     <div>
-      <span class="eyebrow">FACE MORPH & IDENTITY ENGINE</span>
-      <h1>Real Face Morphing & Swapping</h1>
-      <p>Morph your face into real male and female identities with seamless skin matching, contour warping, and identity blending.</p>
+      <span class="eyebrow">FEATURE 1 · COMPUTER VISION PIPELINE</span>
+      <h1>Photo Face Morphing</h1>
+      <p>Transform the facial identity of Source Person (Input A) toward Target Face (Input B) using biometric landmark alignment, Delaunay mesh warping, and seamless skin harmonization.</p>
     </div>
-    <span class="working-status"><i class="pulse-dot"></i> REAL MORPH ENGINE ACTIVE</span>
+    <div class="header-badges">
+      <span class="working-status"><i class="pulse-dot"></i> BIOMETRIC WARP ACTIVE</span>
+    </div>
   </div>
 
-  <div class="two-col">
-    <div class="card">
-      <div id="faceDrop" class="dropzone" style="min-height: 220px; padding: 18px;">
-        <div class="drop-icon" style="width: 44px; height: 44px; font-size: 20px;">↑</div>
-        <h3>1. Upload Your Photo (Source Face)</h3>
-        <p style="margin-bottom: 12px;">JPG, PNG or WEBP with clear front-facing portrait</p>
-        <button id="faceBrowse" class="outline-btn">Choose Your Photo</button>
-        <input id="faceInput" type="file" accept="image/*,video/*" hidden>
+  <!-- Main Morphing Two-Column Input Interface -->
+  <div class="two-col morph-input-grid">
+    <!-- LEFT: SOURCE PERSON (INPUT A) -->
+    <div class="card morph-card" id="sourceCard">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="eyebrow">INPUT A · BASE COMPOSITION</span>
+          <h3>Source Person</h3>
+        </div>
+        <div id="sourceStatusBadge" class="status-badge idle">
+          <span class="status-dot"></span>
+          <span class="status-text">Awaiting Photo</span>
+        </div>
       </div>
-      <div id="faceInfo" class="file-info hidden"></div>
 
-      <!-- Target Face Identity Selector -->
-      <div style="margin-top: 20px;">
-        <span class="eyebrow">2. CHOOSE TARGET IDENTITY TO MORPH INTO</span>
-        <div class="persona-selector-grid" id="personaGrid" style="margin-top: 8px;">
-          <!-- Male Persona: Marcus -->
-          <div class="persona-card active" data-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-gender="male" data-name="Marcus (Chiseled Male)">
+      <!-- Dropzone for Source Photo -->
+      <div id="sourceDrop" class="dropzone-box">
+        <div id="sourceEmptyState" class="dropzone-empty">
+          <div class="drop-icon-circle">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </div>
+          <h4>Upload Source Person</h4>
+          <p>Drag & drop or browse a clear front-facing portrait</p>
+          <span class="file-types-hint">Supports JPG, PNG, WEBP (Max 20MB)</span>
+          <button id="sourceBrowseBtn" class="blue-btn small-btn" type="button">Choose Source Photo</button>
+        </div>
+
+        <!-- Preview State with Detected Face Box & Overlay -->
+        <div id="sourcePreviewState" class="dropzone-preview hidden">
+          <div class="image-stage-wrap">
+            <img id="sourcePreviewImg" class="preview-img" alt="Source Person">
+            <canvas id="sourceLandmarkCanvas" class="landmark-overlay-canvas"></canvas>
+            <div id="sourceFaceBox" class="face-detection-box hidden">
+              <span class="face-box-tag">PRIMARY FACE</span>
+            </div>
+          </div>
+          <div class="image-meta-bar">
+            <div class="meta-info">
+              <strong id="sourceFileName">source.jpg</strong>
+              <small id="sourceMetaDetails">1080 × 1350 · 1.2 MB</small>
+            </div>
+            <div class="meta-actions">
+              <button id="sourceReplaceBtn" class="outline-btn tiny-btn" title="Replace image">Replace</button>
+              <button id="sourceRemoveBtn" class="danger-btn tiny-btn" title="Remove image">Remove</button>
+            </div>
+          </div>
+        </div>
+        <input id="sourceInput" type="file" accept="image/*" hidden>
+      </div>
+
+      <!-- Face Validation Message Box -->
+      <div id="sourceValidationBox" class="validation-notice-box hidden">
+        <span class="notice-icon">ℹ</span>
+        <span id="sourceValidationText" class="notice-text">Analyzing facial geometry...</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: TARGET FACE (INPUT B) -->
+    <div class="card morph-card" id="targetCard">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="eyebrow">INPUT B · TARGET IDENTITY</span>
+          <h3>Target Face</h3>
+        </div>
+        <div id="targetStatusBadge" class="status-badge active-ready">
+          <span class="status-dot"></span>
+          <span class="status-text">Target Locked</span>
+        </div>
+      </div>
+
+      <!-- Quick Preset Personas for Fast Hackathon Demo -->
+      <div class="quick-personas-section">
+        <div class="section-sublabel">
+          <span>QUICK DEMO IDENTITIES (1-CLICK SELECT)</span>
+          <small>Verified landmark profiles</small>
+        </div>
+        <div class="persona-selector-grid" id="personaGrid">
+          <div class="persona-card active" data-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-name="Marcus" data-gender="male">
             <img src="/images/personas/male_marcus.jpg" alt="Marcus" class="persona-avatar-img">
             <div class="persona-info">
               <strong>Marcus</strong>
@@ -33,8 +96,7 @@
             </div>
           </div>
 
-          <!-- Male Persona: Viktor -->
-          <div class="persona-card" data-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-gender="male" data-name="Viktor (Bearded Male)">
+          <div class="persona-card" data-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-name="Viktor" data-gender="male">
             <img src="/images/personas/male_viktor.jpg" alt="Viktor" class="persona-avatar-img">
             <div class="persona-info">
               <strong>Viktor</strong>
@@ -42,8 +104,7 @@
             </div>
           </div>
 
-          <!-- Female Persona: Elena -->
-          <div class="persona-card female-persona" data-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-gender="female" data-name="Elena (Sleek Female)">
+          <div class="persona-card female-persona" data-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-name="Elena" data-gender="female">
             <img src="/images/personas/female_elena.jpg" alt="Elena" class="persona-avatar-img">
             <div class="persona-info">
               <strong>Elena</strong>
@@ -51,8 +112,7 @@
             </div>
           </div>
 
-          <!-- Female Persona: Sophia -->
-          <div class="persona-card female-persona" data-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-gender="female" data-name="Sophia (Radiant Female)">
+          <div class="persona-card female-persona" data-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-name="Sophia" data-gender="female">
             <img src="/images/personas/female_sophia.jpg" alt="Sophia" class="persona-avatar-img">
             <div class="persona-info">
               <strong>Sophia</strong>
@@ -60,84 +120,216 @@
             </div>
           </div>
         </div>
-
-        <!-- Custom Target Person Upload -->
-        <label for="customTargetInput" class="target-upload-box" id="customTargetBox">
-          <span class="target-upload-icon">+</span>
-          <div class="target-upload-text">
-            <strong>Or Upload Any Person's Photo to Morph With</strong>
-            <span>Click to upload someone else's face photo</span>
-          </div>
-          <input id="customTargetInput" type="file" accept="image/*" hidden>
-        </label>
       </div>
 
-      <!-- Optional Cosmetic Filter Overlay -->
-      <div style="margin-top: 15px;">
-        <span class="eyebrow">3. OPTIONAL CYBER MASK OVERLAY</span>
-        <div class="presets-grid" id="facePresetsGrid" style="max-height: 140px; margin-top: 6px;">
-          <div class="filter-chip active" data-filter="none" data-gender="all">
-            <div class="filter-chip-header"><span>Natural Morph</span><span class="chip-tag tag-fx">CLEAN</span></div>
-            <small>Pure realistic facial identity morphing</small>
+      <!-- Custom Target Upload Dropzone -->
+      <div id="targetDrop" class="dropzone-box" style="margin-top: 12px;">
+        <div id="targetEmptyState" class="dropzone-empty" style="padding: 16px;">
+          <div class="drop-icon-circle small">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
           </div>
-          <div class="filter-chip" data-filter="male-tactical" data-gender="male">
-            <div class="filter-chip-header"><span>Cyber Tactical</span><span class="chip-tag tag-male">♂ MALE</span></div>
-            <small>Chiseled jawline HUD & targeting visor</small>
+          <h4>Or Upload Any Custom Target Face</h4>
+          <p>Morph into anyone's face photo</p>
+          <button id="targetBrowseBtn" class="outline-btn tiny-btn" type="button">Upload Custom Person</button>
+        </div>
+
+        <div id="targetPreviewState" class="dropzone-preview hidden">
+          <div class="image-stage-wrap">
+            <img id="targetPreviewImg" class="preview-img" alt="Target Face">
+            <canvas id="targetLandmarkCanvas" class="landmark-overlay-canvas"></canvas>
+            <div id="targetFaceBox" class="face-detection-box hidden">
+              <span class="face-box-tag">TARGET FACE</span>
+            </div>
           </div>
-          <div class="filter-chip" data-filter="female-glam" data-gender="female">
-            <div class="filter-chip-header"><span>Cyber Glam</span><span class="chip-tag tag-female">♀ FEMALE</span></div>
-            <small>Magenta aesthetic contour & cat-eye masque</small>
-          </div>
-          <div class="filter-chip" data-filter="fx-censor" data-gender="fx">
-            <div class="filter-chip-header"><span>Privacy Mosaic</span><span class="chip-tag tag-fx">FX</span></div>
-            <small>Dynamic pixelated identity censor</small>
+          <div class="image-meta-bar">
+            <div class="meta-info">
+              <strong id="targetFileName">Marcus (Target)</strong>
+              <small id="targetMetaDetails">Locked Identity Profile</small>
+            </div>
+            <div class="meta-actions">
+              <button id="targetReplaceBtn" class="outline-btn tiny-btn" title="Replace target">Replace</button>
+              <button id="targetRemoveBtn" class="danger-btn tiny-btn" title="Reset to preset">Reset</button>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <div class="card preview-card">
-      <div class="card-header">
-        <div>
-          <span class="eyebrow">MORPH PROCESSOR</span>
-          <h3 id="currentFilterTitle">Morphing: You → Marcus (Male)</h3>
-        </div>
-        <span class="working-status" id="filterStatusTag"><i class="pulse-dot"></i> READY</span>
-      </div>
-
-      <div id="facePreview" class="preview empty">
-        <div class="empty-message"><b>◉</b><p>Upload your photo to generate your face morphed with the chosen identity.</p></div>
+        <input id="targetInput" type="file" accept="image/*" hidden>
       </div>
 
-      <div class="settings">
-        <!-- Morph Ratio Slider -->
-        <div class="range-control" style="margin: 10px 0;">
-          <div class="morph-slider-header">
-            <span class="morph-badge badge-source">YOU (0%)</span>
-            <strong style="color: #fff; font-size: 11px;">Identity Morph Ratio: <output id="morphRatioValue">60%</output></strong>
-            <span class="morph-badge badge-target" id="targetBadgeLabel">TARGET PERSON (100%)</span>
-          </div>
-          <input id="morphRatio" type="range" min="0" max="100" value="60">
-        </div>
-
-        <!-- Feathering & Skin Harmonization -->
-        <div class="range-control" style="margin: 8px 0;">
-          <label>Skin Tone Harmonization <output id="skinHarmonizeValue">85%</output></label>
-          <input id="skinHarmonize" type="range" min="20" max="100" value="85">
-        </div>
-
-        <div class="range-control" style="margin: 8px 0 14px;">
-          <label>Feature Blend Radius <output id="blendRadiusValue">100%</output></label>
-          <input id="maskScale" type="range" min="60" max="150" value="100">
-        </div>
-
-        <div class="button-row">
-          <button id="processFace" class="blue-btn" disabled>Generate Morph</button>
-          <button id="saveFace" class="outline-btn" disabled>Save to Work</button>
-          <button id="downloadFace" class="download-link-btn" disabled>Download ⤓</button>
-        </div>
+      <!-- Target Validation Message Box -->
+      <div id="targetValidationBox" class="validation-notice-box hidden">
+        <span class="notice-icon">✓</span>
+        <span id="targetValidationText" class="notice-text">Target identity validated and locked.</span>
       </div>
     </div>
   </div>
-  <div class="info-note"><strong>Morph Engine:</strong> Biometric facial warping, skin tone harmonization, and Poisson gradient blending seamlessly blend your photo into the chosen male or female identity.</div>
+
+  <!-- Morph Tuning & Trigger Bar -->
+  <div class="card morph-controls-card">
+    <div class="controls-row">
+      <!-- Identity Morph Ratio Slider -->
+      <div class="control-slider-box">
+        <div class="morph-slider-header">
+          <span class="morph-badge badge-source">SOURCE (0%)</span>
+          <span class="slider-title">Identity Morph Ratio: <output id="morphRatioValue">65%</output></span>
+          <span class="morph-badge badge-target" id="targetBadgeLabel">TARGET (100%)</span>
+        </div>
+        <input id="morphRatio" class="range-slider" type="range" min="10" max="95" value="65">
+      </div>
+
+      <!-- Skin Harmonization Slider -->
+      <div class="control-slider-box">
+        <div class="morph-slider-header">
+          <span class="slider-title">Skin Tone Harmonization: <output id="skinHarmonizeValue">85%</output></span>
+          <small class="slider-desc">Color temperature & lighting adaptation</small>
+        </div>
+        <input id="skinHarmonize" class="range-slider" type="range" min="10" max="100" value="85">
+      </div>
+    </div>
+
+    <!-- Responsible AI Consent Checkbox -->
+    <div class="consent-agreement-row">
+      <label class="consent-label" for="consentCheck">
+        <input type="checkbox" id="consentCheck" checked>
+        <span class="checkbox-custom"></span>
+        <span class="consent-text">
+          <strong>Responsible AI Confirmation:</strong> I confirm I have permission to use this person's image, and I agree to use this platform responsibly without deceptive intent.
+        </span>
+      </label>
+    </div>
+
+    <!-- Main Morph Action Button -->
+    <div class="action-btn-row">
+      <button id="executeMorphBtn" class="blue-btn big-cta-btn" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <span>MORPH FACE IDENTITY</span>
+      </button>
+    </div>
+
+    <!-- Real Multi-Stage Processing Indicator -->
+    <div id="processingSection" class="processing-status-section hidden">
+      <div class="progress-bar-wrap">
+        <div id="morphProgressBar" class="progress-bar-inner"></div>
+      </div>
+      <div class="stage-status-row">
+        <span id="currentStageText" class="current-stage-title">Detecting face in Source and Target...</span>
+        <span id="stagePercentText" class="stage-percent">20%</span>
+      </div>
+      <ul class="stages-checklist" id="stagesChecklist">
+        <li id="stg-detect" class="stage-step active">1. Detect face in Source and Target images</li>
+        <li id="stg-landmarks" class="stage-step">2. Map 468 biometric facial landmarks</li>
+        <li id="stg-align" class="stage-step">3. Align target face rotation, scale & affine matrix</li>
+        <li id="stg-warp" class="stage-step">4. Execute Delaunay mesh warping & skin harmonization</li>
+        <li id="stg-blend" class="stage-step">5. Seamless feathered boundary blending</li>
+        <li id="stg-finalize" class="stage-step">6. Finalize high-resolution composition</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Result Showcase Section (Revealed upon processing) -->
+  <div id="resultSection" class="result-showcase-section hidden">
+    <div class="card result-card">
+      <div class="result-card-header">
+        <div>
+          <span class="eyebrow">TRANSFORMATION RESULT</span>
+          <h2>Source → Target → Morphed Identity</h2>
+          <p id="resultSubheading">Target face geometrically aligned and blended into source composition.</p>
+        </div>
+        <div class="result-header-actions">
+          <span class="badge-pill green"><i class="pulse-dot"></i> MORPH COMPLETE</span>
+        </div>
+      </div>
+
+      <!-- 3-Way Flow Display: SOURCE → TARGET → RESULT -->
+      <div class="three-way-flow-grid">
+        <div class="flow-card">
+          <div class="flow-label">SOURCE PERSON</div>
+          <div class="flow-img-box">
+            <img id="flowSourceImg" alt="Source">
+          </div>
+          <span class="flow-caption" id="flowSourceCaption">Original Portrait</span>
+        </div>
+
+        <div class="flow-arrow-indicator">
+          <span>+</span>
+          <small>ALIGNED</small>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-label">TARGET IDENTITY</div>
+          <div class="flow-img-box">
+            <img id="flowTargetImg" alt="Target">
+          </div>
+          <span class="flow-caption" id="flowTargetCaption">Target Face</span>
+        </div>
+
+        <div class="flow-arrow-indicator">
+          <span>=</span>
+          <small>TRANSFORMED</small>
+        </div>
+
+        <div class="flow-card highlight-result">
+          <div class="flow-label glow">FINAL MORPHED RESULT</div>
+          <div class="flow-img-box">
+            <img id="flowResultImg" alt="Morphed Result">
+            <span class="watermark-tag">AI TRANSFORMED</span>
+          </div>
+          <span class="flow-caption">Biometric Hybrid</span>
+        </div>
+      </div>
+
+      <!-- Interactive Before / After Split Slider Comparison -->
+      <div class="split-slider-section">
+        <div class="split-slider-header">
+          <div>
+            <span class="eyebrow">INTERACTIVE COMPARISON</span>
+            <h3>Drag slider to compare Source vs Morphed Identity</h3>
+          </div>
+          <span class="slider-hint">Drag handle ↔</span>
+        </div>
+
+        <div class="split-slider-container" id="splitSliderContainer">
+          <!-- Background: Transformed Morphed Result -->
+          <img id="splitResultImg" class="split-img after-img" alt="Transformed Result">
+
+          <!-- Foreground (Clipped): Original Source Person -->
+          <div class="split-clipped-wrap" id="splitClipWrap">
+            <img id="splitSourceImg" class="split-img before-img" alt="Original Source">
+            <span class="split-label before-tag">BEFORE (SOURCE)</span>
+          </div>
+          <span class="split-label after-tag">AFTER (TRANSFORMED)</span>
+
+          <!-- Draggable Divider Handle -->
+          <div class="split-handle" id="splitHandle">
+            <div class="handle-line"></div>
+            <div class="handle-button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8l4 4-4 4M6 8l-4 4 4 4"/></svg>
+            </div>
+            <div class="handle-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Action Bar -->
+      <div class="result-action-bar">
+        <button id="downloadResultBtn" class="blue-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <span>Download Result</span>
+        </button>
+
+        <button id="saveResultBtn" class="outline-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+          <span>Save to Workspace</span>
+        </button>
+
+        <button id="useInLiveCameraBtn" class="emerald-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          <span>Use Result in Live Camera →</span>
+        </button>
+
+        <button id="processAgainBtn" class="ghost-btn">
+          <span>Process Another Morph</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

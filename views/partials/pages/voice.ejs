@@ -1,128 +1,248 @@
-<!-- VOICE -->
+<!-- VOICE STUDIO -->
 <div id="voice" class="page">
   <div class="page-heading">
     <div>
-      <span class="eyebrow">VOICE & IDENTITY MORPHING</span>
-      <h1>Real Voice Morphing Engine</h1>
-      <p>Morph and transform voice recordings into specific male and female vocal identities with real-time pitch transposition, formant modulation, and chest resonance.</p>
+      <span class="eyebrow">FEATURE 2 · NEURAL AUDIO & DSP</span>
+      <h1>AI Voice Studio</h1>
+      <p>Record your voice or upload audio and transform vocal characteristics into 9 targeted identity styles using pitch transposition, formant modulation, and spectral filtering.</p>
     </div>
-    <span class="working-status"><i class="pulse-dot"></i> DSP MORPH ENGINE ACTIVE</span>
+    <div class="header-badges">
+      <span class="working-status"><i class="pulse-dot"></i> DSP ENGINE READY</span>
+    </div>
   </div>
 
-  <div class="two-col">
-    <div class="card">
-      <div id="audioDrop" class="dropzone">
-        <div class="drop-icon">♪</div>
-        <h3>Upload voice recording</h3>
-        <p>MP3, WAV, OGG, M4A or AAC</p>
-        <button id="audioBrowse" class="outline-btn">Choose audio</button>
-        <input id="audioInput" type="file" accept="audio/*" hidden>
-      </div>
-      <div id="audioInfo" class="file-info hidden"></div>
-
-      <!-- Target Voice Persona Grid -->
-      <div style="margin-top: 18px;">
-        <span class="eyebrow">CHOOSE TARGET VOCAL IDENTITY</span>
-        <div class="sound-presets-grid" id="soundPresetsGrid">
-          <div class="sound-card active" data-sound="normal" data-name="Clean Natural">
-            <span class="sound-icon">👤</span>
-            <strong>Original Voice</strong>
-            <small>Natural input</small>
-          </div>
-
-          <div class="sound-card" data-sound="deep-male" data-name="Marcus (Deep Male)">
-            <span class="sound-icon">🎙️</span>
-            <strong>Marcus (Deep ♂)</strong>
-            <small>-4 st, low chest resonance</small>
-          </div>
-
-          <div class="sound-card" data-sound="bass808" data-name="Viktor (Baritone ♂)">
-            <span class="sound-icon">🧔</span>
-            <strong>Viktor (Baritone ♂)</strong>
-            <small>-6 st, heavy vocal rumble</small>
-          </div>
-
-          <div class="sound-card" data-sound="high-female" data-name="Elena (Feminine ♀)">
-            <span class="sound-icon">✨</span>
-            <strong>Elena (Sleek ♀)</strong>
-            <small>+4 st, breathy presence</small>
-          </div>
-
-          <div class="sound-card" data-sound="soprano" data-name="Sophia (Radiant ♀)">
-            <span class="sound-icon">🌸</span>
-            <strong>Sophia (Bright ♀)</strong>
-            <small>+7 st, high melodic lift</small>
-          </div>
-
-          <div class="sound-card" data-sound="robot" data-name="Cyber Android">
-            <span class="sound-icon">🤖</span>
-            <strong>Cyber Android</strong>
-            <small>Digital vocoder ring</small>
-          </div>
-
-          <div class="sound-card" data-sound="radio" data-name="Walkie-Talkie">
-            <span class="sound-icon">📻</span>
-            <strong>Radio Comms</strong>
-            <small>Military radio crunch</small>
-          </div>
-
-          <div class="sound-card" data-sound="echo" data-name="Cathedral Echo">
-            <span class="sound-icon">🏛️</span>
-            <strong>Cathedral</strong>
-            <small>Cavernous delay</small>
-          </div>
-
-          <div class="sound-card" data-sound="alien" data-name="Cosmic Entity">
-            <span class="sound-icon">🛸</span>
-            <strong>Cosmic Entity</strong>
-            <small>Harmonic formant sweep</small>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
+  <div class="two-col voice-studio-grid">
+    <!-- LEFT COLUMN: INPUT (RECORD OR UPLOAD) -->
+    <div class="card voice-input-card">
       <div class="card-header">
-        <div>
-          <span class="eyebrow">VOCAL DSP MORPH</span>
-          <h3 id="currentVoiceTitle">Vocal Target: Original Voice</h3>
+        <div class="card-title-group">
+          <span class="eyebrow">INPUT SOURCE</span>
+          <h3>Voice Recording & Audio</h3>
         </div>
-        <span class="working-status" id="voiceStatusTag"><i class="pulse-dot"></i> DSP READY</span>
-      </div>
-
-      <div class="waveform" id="waveform"></div>
-      <audio id="audioPlayer" controls hidden style="width: 100%; margin-bottom: 12px;"></audio>
-
-      <!-- Gender Morph Pitch Slider -->
-      <div class="range-control">
-        <div class="morph-slider-header">
-          <span class="morph-badge badge-source" style="color: #72b2ff;">♂ DEEP MALE (0.7×)</span>
-          <strong style="color: #fff; font-size: 11px;">Pitch & Gender Transposition: <output id="pitchValue">1.00×</output></strong>
-          <span class="morph-badge badge-target" style="color: #ff8df0;">♀ HIGH FEMALE (1.45×)</span>
+        <div id="audioSourceBadge" class="status-badge idle">
+          <span class="status-dot"></span>
+          <span id="audioSourceText">No Audio Loaded</span>
         </div>
-        <input id="pitch" type="range" min=".65" max="1.45" step=".01" value="1">
       </div>
 
-      <div class="range-control">
-        <label>Playback Speed <output id="speedValue">1.00×</output></label>
-        <input id="speed" type="range" min=".70" max="1.30" step=".01" value="1">
+      <!-- Input Switch Tabs: Microphone Record vs File Upload -->
+      <div class="voice-tabs">
+        <button class="voice-tab active" id="tabRecordBtn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+          <span>Record Microphone</span>
+        </button>
+        <button class="voice-tab" id="tabUploadBtn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          <span>Upload Audio File</span>
+        </button>
       </div>
 
-      <div class="range-control">
-        <label>Formant & Chest Resonance <output id="depthValue">75%</output></label>
-        <input id="filterDepth" type="range" min="10" max="100" value="75">
+      <!-- Microphone Record Section -->
+      <div id="micRecordSection" class="voice-subpanel">
+        <div class="record-console">
+          <div class="record-pulse-ring" id="recordPulseRing">
+            <button id="micRecordBtn" class="mic-action-btn" type="button" title="Start Recording">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+            </button>
+          </div>
+          <div class="record-timer" id="recordTimer">00:00</div>
+          <p id="recordStatusLabel" class="record-hint">Click microphone to start recording</p>
+          <div class="record-controls-row">
+            <button id="stopRecordBtn" class="outline-btn tiny-btn" type="button" disabled>Stop Recording</button>
+            <button id="resetRecordBtn" class="ghost-btn tiny-btn" type="button" disabled>Discard</button>
+          </div>
+        </div>
       </div>
 
-      <div class="range-control">
-        <label>Spatial Echo & Room Delay <output id="echoMixValue">20%</output></label>
-        <input id="echoMix" type="range" min="0" max="100" value="20">
+      <!-- Audio File Upload Section -->
+      <div id="fileUploadSection" class="voice-subpanel hidden">
+        <div id="audioDrop" class="dropzone-box" style="padding: 24px;">
+          <div class="drop-icon-circle">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13M9 9l12-2M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm12 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+          </div>
+          <h4>Drop audio file here</h4>
+          <p>MP3, WAV, OGG, M4A or WEBM (Max 25MB)</p>
+          <button id="audioBrowse" class="blue-btn small-btn" type="button">Browse Audio</button>
+          <input id="audioInput" type="file" accept="audio/*" hidden>
+        </div>
       </div>
 
-      <div class="button-row" style="margin-top: 15px;">
-        <button id="applyVoice" class="blue-btn" disabled>Apply Voice Morph</button>
-        <button id="saveVoice" class="outline-btn" disabled>Save to Work</button>
+      <!-- Loaded Audio Meta Bar -->
+      <div id="audioInfoBar" class="image-meta-bar hidden" style="margin-top: 14px;">
+        <div class="meta-info">
+          <strong id="audioFileName">recording.wav</strong>
+          <small id="audioFileMeta">Duration: 0:06 · 44.1 kHz</small>
+        </div>
+        <div class="meta-actions">
+          <button id="resetAudioBtn" class="danger-btn tiny-btn" type="button">Reset</button>
+        </div>
+      </div>
+
+      <!-- Responsible AI Voice Notice -->
+      <div class="responsible-notice-box small-notice" style="margin-top: 16px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <span><strong>Consent policy:</strong> Voice synthesis must never be used to impersonate an identifiable individual without express authorization.</span>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: TARGET STYLES & DSP PROCESSOR -->
+    <div class="card voice-dsp-card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="eyebrow">TRANSFORMATION PROFILE</span>
+          <h3 id="currentVoiceTitle">Vocal Target: Female (Sleek ♀)</h3>
+        </div>
+        <span class="badge-pill cyan" id="dspStatusBadge">DSP ACTIVE</span>
+      </div>
+
+      <!-- 9 Voice Styles Selection Grid -->
+      <div class="voice-styles-section">
+        <span class="section-sublabel">CHOOSE TARGET VOCAL IDENTITY</span>
+        <div class="voice-presets-grid" id="soundPresetsGrid">
+          <!-- 1. Female -->
+          <div class="sound-card active" data-sound="female" data-name="Female (Sleek ♀)" data-pitch="1.28">
+            <span class="sound-icon">✨</span>
+            <div class="sound-card-text">
+              <strong>Female (Sleek ♀)</strong>
+              <small>+4 st · Feminine formants</small>
+            </div>
+          </div>
+
+          <!-- 2. Male -->
+          <div class="sound-card" data-sound="male" data-name="Male (Deep ♂)" data-pitch="0.80">
+            <span class="sound-icon">🎙️</span>
+            <div class="sound-card-text">
+              <strong>Male (Deep ♂)</strong>
+              <small>-4 st · Low chest resonance</small>
+            </div>
+          </div>
+
+          <!-- 3. Child -->
+          <div class="sound-card" data-sound="child" data-name="Child (Bright)" data-pitch="1.55">
+            <span class="sound-icon">👶</span>
+            <div class="sound-card-text">
+              <strong>Child (Bright)</strong>
+              <small>+8 st · Youthful acoustic shift</small>
+            </div>
+          </div>
+
+          <!-- 4. Elderly -->
+          <div class="sound-card" data-sound="elderly" data-name="Elderly (Warm)" data-pitch="0.88">
+            <span class="sound-icon">👴</span>
+            <div class="sound-card-text">
+              <strong>Elderly (Warm)</strong>
+              <small>-2 st · Soft transients & vibrato</small>
+            </div>
+          </div>
+
+          <!-- 5. Robotic -->
+          <div class="sound-card" data-sound="robotic" data-name="Robotic (Cyber Android)" data-pitch="1.00">
+            <span class="sound-icon">🤖</span>
+            <div class="sound-card-text">
+              <strong>Robotic</strong>
+              <small>Digital vocoder ring</small>
+            </div>
+          </div>
+
+          <!-- 6. Deep -->
+          <div class="sound-card" data-sound="deep" data-name="Deep (Sub-Bass Rumble)" data-pitch="0.68">
+            <span class="sound-icon">🧔</span>
+            <div class="sound-card-text">
+              <strong>Deep (Sub-Bass)</strong>
+              <small>-7 st · 75Hz acoustic rumble</small>
+            </div>
+          </div>
+
+          <!-- 7. High Pitch -->
+          <div class="sound-card" data-sound="high_pitch" data-name="High Pitch (Helium)" data-pitch="1.70">
+            <span class="sound-icon">🎈</span>
+            <div class="sound-card-text">
+              <strong>High Pitch</strong>
+              <small>+9 st · Helium frequency lift</small>
+            </div>
+          </div>
+
+          <!-- 8. Cartoon -->
+          <div class="sound-card" data-sound="cartoon" data-name="Cartoon (Playful)" data-pitch="1.42">
+            <span class="sound-icon">🎭</span>
+            <div class="sound-card-text">
+              <strong>Cartoon</strong>
+              <small>+6 st · Exaggerated resonance</small>
+            </div>
+          </div>
+
+          <!-- 9. Character -->
+          <div class="sound-card" data-sound="character" data-name="Character (Tactical Comms)" data-pitch="0.95">
+            <span class="sound-icon">📻</span>
+            <div class="sound-card-text">
+              <strong>Character Comms</strong>
+              <small>Military radio transceiver</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Dynamic Waveform Visualizer -->
+      <div class="waveform-box">
+        <div class="waveform-header">
+          <span>SPECTRAL FREQUENCY VISUALIZER</span>
+          <span class="waveform-live-dot"><i class="pulse-dot"></i> AUDIO BUS</span>
+        </div>
+        <div class="waveform" id="waveform"></div>
+      </div>
+
+      <!-- Dual Before/After Audio Players & Toggle -->
+      <div class="audio-players-wrap">
+        <div class="audio-toggle-bar">
+          <span class="toggle-title">A/B AUDIO COMPARISON</span>
+          <div class="toggle-pill-group">
+            <button class="toggle-pill" id="playOriginalBtn" type="button" disabled>Original Voice</button>
+            <button class="toggle-pill active" id="playTransformedBtn" type="button" disabled>Transformed Voice</button>
+          </div>
+        </div>
+        <audio id="audioPlayer" controls style="width: 100%; margin: 8px 0 14px;"></audio>
+      </div>
+
+      <!-- Sliders for Fine-Tuning Voice Parameters -->
+      <div class="voice-sliders-group">
+        <div class="range-control">
+          <div class="morph-slider-header">
+            <span class="morph-badge badge-source">LOWER (-8 st)</span>
+            <span class="slider-title">Pitch Transposition: <output id="pitchValue">1.28×</output></span>
+            <span class="morph-badge badge-target">HIGHER (+10 st)</span>
+          </div>
+          <input id="pitch" class="range-slider" type="range" min="0.60" max="1.80" step="0.01" value="1.28">
+        </div>
+
+        <div class="range-control" style="margin-top: 8px;">
+          <div class="morph-slider-header">
+            <span class="slider-title">Formant & Chest Resonance: <output id="depthValue">80%</output></span>
+            <small class="slider-desc">Acoustic throat cavity displacement</small>
+          </div>
+          <input id="filterDepth" class="range-slider" type="range" min="10" max="100" value="80">
+        </div>
+
+        <div class="range-control" style="margin-top: 8px;">
+          <div class="morph-slider-header">
+            <span class="slider-title">Spatial Echo & Reverb Mix: <output id="echoMixValue">15%</output></span>
+            <small class="slider-desc">Acoustic room depth</small>
+          </div>
+          <input id="echoMix" class="range-slider" type="range" min="0" max="80" value="15">
+        </div>
+      </div>
+
+      <!-- Voice Action Buttons -->
+      <div class="button-row" style="margin-top: 18px;">
+        <button id="applyVoice" class="blue-btn" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span>Transform Voice</span>
+        </button>
+        <button id="downloadVoiceBtn" class="outline-btn" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <span>Download Audio</span>
+        </button>
+        <button id="saveVoice" class="ghost-btn" disabled>Save to Work</button>
       </div>
     </div>
   </div>
-  <div class="info-note"><strong>Voice Morphing Pipeline:</strong> Formant frequency transposition, biquad shelving, and non-linear saturation transform speaker characteristics into targeted male and female identities.</div>
 </div>

@@ -1,17 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const indexController = require('../controllers/index.controller');
+const apiRoutes = require('./api.routes');
 
 // View Routes
 router.get('/', indexController.renderHome);
-
-// Health Check API
 router.get('/health', indexController.getHealth);
-router.get('/api/health', indexController.getHealth);
 
-// REST API Endpoints
-router.get('/api/projects', indexController.getProjects);
-router.post('/api/projects', indexController.createProject);
-router.post('/api/auth/login', indexController.handleLogin);
+// Mount API routes
+router.use('/api', apiRoutes);
 
 module.exports = router;

@@ -2,13 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MaskLab | Media Studio</title>
-  <link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MaskLab | AI Face &amp; Voice Studio</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+
 </head>
 <body>
 
 <div id="toast" class="toast"></div>
+
 
 <!-- LOGIN -->
 <section id="loginPage" class="login-page">
@@ -49,199 +55,998 @@
   </div>
 </section>
 
+
 <!-- APP -->
 <section id="app" class="app hidden">
   <aside class="sidebar">
-    <div class="brand side-brand">
-      <div class="brand-logo">M</div>
-      <div><strong>MaskLab</strong><span>Media Studio</span></div>
-    </div>
+  <div class="brand side-brand">
+    <div class="brand-logo">M</div>
+    <div><strong>MaskLab</strong><span>AI Face & Voice Studio</span></div>
+  </div>
 
-    <nav>
-      <button class="nav-item active" data-page="home"><span>⌂</span> Home</button>
-      <button class="nav-item" data-page="face"><span>▣</span> Image & Video</button>
-      <button class="nav-item" data-page="voice"><span>◖</span> Voice</button>
-      <button class="nav-item" data-page="live"><span>○</span> Live Camera</button>
-      <button class="nav-item" data-page="projects"><span>□</span> Projects</button>
-    </nav>
+  <nav>
+    <button class="nav-item active" data-page="home"><span>⌂</span> Home</button>
+    <button class="nav-item" data-page="face"><span>▣</span> Face Morph</button>
+    <button class="nav-item" data-page="voice"><span>◖</span> Voice Studio</button>
+    <button class="nav-item" data-page="live"><span>○</span> Live Camera</button>
+    <button class="nav-item" data-page="projects"><span>□</span> Projects</button>
+  </nav>
 
-    <div class="sidebar-bottom">
-      <div class="demo-label">DEMO MODE</div>
-      <button id="logoutBtn" class="logout">Log out</button>
+  <div class="sidebar-bottom">
+    <div class="demo-label" style="color: #06b6d4; border-color: rgba(6, 182, 212, 0.3); display: flex; align-items: center; justify-content: center; gap: 6px;">
+      <i class="pulse-dot"></i> HACKATHON BUILD
     </div>
-  </aside>
+    <button id="logoutBtn" class="logout">Exit Workspace</button>
+  </div>
+</aside>
+
 
   <main class="main">
     <header class="topbar">
-      <div>
-        <span id="pageKicker" class="eyebrow">WORKSPACE</span>
-        <h2 id="pageTitle">Home</h2>
-      </div>
-      <div class="profile">
-        <div class="avatar" id="avatar">G</div>
-        <div><strong id="profileName">Guest</strong><small>Demo account</small></div>
-      </div>
-    </header>
+  <div>
+    <span id="pageKicker" class="eyebrow">WORKSPACE</span>
+    <h2 id="pageTitle">Home</h2>
+  </div>
+  <div class="profile">
+    <div class="avatar" id="avatar">G</div>
+    <div><strong id="profileName">Guest</strong><small>Demo account</small></div>
+  </div>
+</header>
+
 
     <!-- HOME -->
-    <div id="home" class="page active-page">
-      <div class="welcome">
-        <div>
-          <span class="eyebrow">MEDIA WORKSPACE</span>
-          <h1>Your media,<br><span>your workspace.</span></h1>
-          <p>Upload a file, try an effect and save your result. Everything here is designed for a clean live demonstration.</p>
-          <button class="blue-btn" data-go="face">Create something →</button>
-        </div>
-        <div class="simple-graphic">
-          <div class="graphic-box">M</div>
-          <div class="graphic-line"></div>
-          <div class="graphic-box outline">+</div>
-        </div>
+<div id="home" class="page active-page">
+  <!-- Hero Section -->
+  <div class="welcome hero-banner">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        <span>NEXT-GEN AI TRANSFORMATION SUITE</span>
+      </div>
+      <h1 class="hero-title">TRANSFORM<br><span class="gradient-text">REALITY.</span></h1>
+      <p class="hero-subtitle">AI-powered face, voice and live transformation platform. Biometric landmark alignment, neural formant synthesis, and real-time GPU-accelerated live camera tracking.</p>
+      
+      <div class="hero-cta-group">
+        <button class="blue-btn hero-primary-btn" data-go="face">
+          <span>START CREATING</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="outline-btn hero-secondary-btn" data-go="live">
+          <span class="live-dot-red"></span>
+          <span>Launch Live Camera</span>
+        </button>
       </div>
 
-      <div class="section-title">
-        <span class="eyebrow">TOOLS</span>
-        <h3>What do you want to work on?</h3>
+      <!-- Responsible AI Notice -->
+      <div class="responsible-notice-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <p><strong>Responsible AI Notice:</strong> Use only images, voices and recordings you have permission to transform. AI-generated media may be misleading; label or disclose transformed content when appropriate.</p>
       </div>
-
-      <div class="tool-grid">
-        <article class="tool-card" data-go="face">
-          <div class="tool-number">01</div>
-          <h3>Image & Video</h3>
-          <p>Upload an image or video and apply a visible face-mask effect.</p>
-          <span>Open →</span>
-        </article>
-        <article class="tool-card" data-go="voice">
-          <div class="tool-number">02</div>
-          <h3>Voice</h3>
-          <p>Upload audio and preview simple pitch and speed changes.</p>
-          <span>Open →</span>
-        </article>
-        <article class="tool-card" data-go="live">
-          <div class="tool-number">03</div>
-          <h3>Live Camera</h3>
-          <p>Open your camera and demonstrate a graphic face overlay.</p>
-          <span>Open →</span>
-        </article>
-      </div>
-
-      <div class="section-title recent-title">
-        <span class="eyebrow">RECENT</span>
-        <h3>Recent projects</h3>
-      </div>
-      <div id="recentProjects" class="recent-list"></div>
     </div>
 
-    <!-- IMAGE VIDEO -->
-    <div id="face" class="page">
-      <div class="page-heading">
-        <div><span class="eyebrow">IMAGE & VIDEO</span><h1>Face masking</h1><p>Upload your media and preview a graphic masking treatment.</p></div>
-        <span class="small-status">LOCAL DEMO</span>
+    <div class="hero-visual-card">
+      <div class="matrix-card">
+        <div class="matrix-header">
+          <div class="matrix-dots"><span></span><span></span><span></span></div>
+          <span class="matrix-label">BIOMETRIC ENGINE // V3.2</span>
+        </div>
+        <div class="matrix-canvas-wrap">
+          <div class="mesh-scanner-anim"></div>
+          <div class="face-wireframe-hud">
+            <div class="hud-corner tl"></div>
+            <div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div>
+            <div class="hud-corner br"></div>
+            <div class="hud-reticle"></div>
+            <div class="hud-landmark-points">
+              <span class="pt p1"></span><span class="pt p2"></span><span class="pt p3"></span>
+              <span class="pt p4"></span><span class="pt p5"></span><span class="pt p6"></span>
+            </div>
+          </div>
+          <div class="hud-telemetry">
+            <div><span>LANDMARKS:</span> <strong>468 KEYPOINTS</strong></div>
+            <div><span>ALIGNMENT:</span> <strong>AFFINE + DELAUNAY</strong></div>
+            <div><span>LATENCY:</span> <strong>&lt; 18ms (GPU)</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three Core Capabilities Section -->
+  <div class="section-title">
+    <span class="eyebrow">CORE CAPABILITIES</span>
+    <h3>Choose your transformation studio</h3>
+  </div>
+
+  <div class="tool-grid three-core-grid">
+    <article class="tool-card feature-hero-card" data-go="face">
+      <div class="card-glow-top cyan"></div>
+      <div class="tool-number">01</div>
+      <div class="card-icon-pill">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 0 0-9 9 9 9 0 0 0 9 9 9 9 0 0 0 9-9 9 9 0 0 0-9-9z"/><path d="M9 10h.01M15 10h.01M9.5 15.5a3.5 3.5 0 0 0 5 0"/></svg>
+      </div>
+      <h3>FACE MORPH</h3>
+      <p>Upload Source Person (Input A) and Target Face (Input B). Real computer-vision landmark alignment, Delaunay mesh warping, skin tone harmonization, and interactive before/after split slider.</p>
+      <div class="card-tags">
+        <span class="chip-tag tag-cyan">468 Landmarks</span>
+        <span class="chip-tag tag-male">Geometric Align</span>
+        <span class="chip-tag tag-fx">Split Slider</span>
+      </div>
+      <span class="open-link">Open Face Morph →</span>
+    </article>
+
+    <article class="tool-card feature-hero-card" data-go="voice">
+      <div class="card-glow-top purple"></div>
+      <div class="tool-number">02</div>
+      <div class="card-icon-pill">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+      </div>
+      <h3>VOICE STUDIO</h3>
+      <p>Record voice with microphone or upload audio. Transform into 9 styles (Female, Male, Child, Elderly, Robotic, Deep, High Pitch, Cartoon, Character) with real-time audio visualizer & DSP.</p>
+      <div class="card-tags">
+        <span class="chip-tag tag-female">9 Voice Styles</span>
+        <span class="chip-tag tag-cyan">Formant Modulation</span>
+        <span class="chip-tag tag-fx">Mic Recording</span>
+      </div>
+      <span class="open-link">Open Voice Studio →</span>
+    </article>
+
+    <article class="tool-card feature-hero-card" data-go="live">
+      <div class="card-glow-top green"></div>
+      <div class="tool-number">03</div>
+      <div class="card-icon-pill">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+      </div>
+      <h3>LIVE CAM</h3>
+      <p>Stream your webcam with real-time continuous face tracking. The selected target face stays locked frame-by-frame. Record transformed canvas output directly to WebM video with download.</p>
+      <div class="card-tags">
+        <span class="chip-tag tag-green">Continuous Tracking</span>
+        <span class="chip-tag tag-cyan">Locked Target</span>
+        <span class="chip-tag tag-fx">Canvas Recorder</span>
+      </div>
+      <span class="open-link">Launch Live Camera →</span>
+    </article>
+  </div>
+
+  <!-- Recent Projects Section -->
+  <div class="section-title recent-title" style="margin-top: 36px;">
+    <div>
+      <span class="eyebrow">SAVED WORK</span>
+      <h3>Recent transformations</h3>
+    </div>
+    <button class="outline-btn small" data-go="projects">View all work →</button>
+  </div>
+  <div id="recentProjects" class="recent-list"></div>
+</div>
+
+    <!-- PHOTO FACE MORPHING -->
+<div id="face" class="page">
+  <div class="page-heading">
+    <div>
+      <span class="eyebrow">FEATURE 1 · COMPUTER VISION PIPELINE</span>
+      <h1>Photo Face Morphing</h1>
+      <p>Transform the facial identity of Source Person (Input A) toward Target Face (Input B) using biometric landmark alignment, Delaunay mesh warping, and seamless skin harmonization.</p>
+    </div>
+    <div class="header-badges">
+      <span class="working-status"><i class="pulse-dot"></i> BIOMETRIC WARP ACTIVE</span>
+    </div>
+  </div>
+
+  <!-- Main Morphing Two-Column Input Interface -->
+  <div class="two-col morph-input-grid">
+    <!-- LEFT: SOURCE PERSON (INPUT A) -->
+    <div class="card morph-card" id="sourceCard">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="eyebrow">INPUT A · BASE COMPOSITION</span>
+          <h3>Source Person</h3>
+        </div>
+        <div id="sourceStatusBadge" class="status-badge idle">
+          <span class="status-dot"></span>
+          <span class="status-text">Awaiting Photo</span>
+        </div>
       </div>
 
-      <div class="two-col">
-        <div class="card">
-          <div id="faceDrop" class="dropzone">
-            <div class="drop-icon">↑</div>
-            <h3>Upload image or video</h3>
-            <p>JPG, PNG, WEBP, MP4 or WEBM</p>
-            <button id="faceBrowse" class="outline-btn">Choose file</button>
-            <input id="faceInput" type="file" accept="image/*,video/*" hidden>
+      <!-- Dropzone for Source Photo -->
+      <div id="sourceDrop" class="dropzone-box">
+        <div id="sourceEmptyState" class="dropzone-empty">
+          <div class="drop-icon-circle">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
           </div>
-          <div id="faceInfo" class="file-info hidden"></div>
+          <h4>Upload Source Person</h4>
+          <p>Drag & drop or browse a clear front-facing portrait</p>
+          <span class="file-types-hint">Supports JPG, PNG, WEBP (Max 20MB)</span>
+          <button id="sourceBrowseBtn" class="blue-btn small-btn" type="button">Choose Source Photo</button>
         </div>
 
-        <div class="card preview-card">
-          <div class="card-header"><div><span class="eyebrow">PREVIEW</span><h3>Masked version</h3></div><span class="blue-tag">DEMO</span></div>
-          <div id="facePreview" class="preview empty">
-            <div class="empty-message"><b>◉</b><p>Upload media to see a preview.</p></div>
+        <!-- Preview State with Detected Face Box & Overlay -->
+        <div id="sourcePreviewState" class="dropzone-preview hidden">
+          <div class="image-stage-wrap">
+            <img id="sourcePreviewImg" class="preview-img" alt="Source Person">
+            <canvas id="sourceLandmarkCanvas" class="landmark-overlay-canvas"></canvas>
+            <div id="sourceFaceBox" class="face-detection-box hidden">
+              <span class="face-box-tag">PRIMARY FACE</span>
+            </div>
           </div>
-          <div class="settings">
-            <label>Mask strength <output id="strengthValue">60%</output></label>
-            <input id="strength" type="range" min="10" max="100" value="60">
-            <div class="button-row">
-              <button id="processFace" class="blue-btn" disabled>Apply mask</button>
-              <button id="saveFace" class="outline-btn" disabled>Save</button>
+          <div class="image-meta-bar">
+            <div class="meta-info">
+              <strong id="sourceFileName">source.jpg</strong>
+              <small id="sourceMetaDetails">1080 × 1350 · 1.2 MB</small>
+            </div>
+            <div class="meta-actions">
+              <button id="sourceReplaceBtn" class="outline-btn tiny-btn" title="Replace image">Replace</button>
+              <button id="sourceRemoveBtn" class="danger-btn tiny-btn" title="Remove image">Remove</button>
+            </div>
+          </div>
+        </div>
+        <input id="sourceInput" type="file" accept="image/*" hidden>
+      </div>
+
+      <!-- Face Validation Message Box -->
+      <div id="sourceValidationBox" class="validation-notice-box hidden">
+        <span class="notice-icon">ℹ</span>
+        <span id="sourceValidationText" class="notice-text">Analyzing facial geometry...</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: TARGET FACE (INPUT B) -->
+    <div class="card morph-card" id="targetCard">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="eyebrow">INPUT B · TARGET IDENTITY</span>
+          <h3>Target Face</h3>
+        </div>
+        <div id="targetStatusBadge" class="status-badge active-ready">
+          <span class="status-dot"></span>
+          <span class="status-text">Target Locked</span>
+        </div>
+      </div>
+
+      <!-- Quick Preset Personas for Fast Hackathon Demo -->
+      <div class="quick-personas-section">
+        <div class="section-sublabel">
+          <span>QUICK DEMO IDENTITIES (1-CLICK SELECT)</span>
+          <small>Verified landmark profiles</small>
+        </div>
+        <div class="persona-selector-grid" id="personaGrid">
+          <div class="persona-card active" data-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-name="Marcus" data-gender="male">
+            <img src="/images/personas/male_marcus.jpg" alt="Marcus" class="persona-avatar-img">
+            <div class="persona-info">
+              <strong>Marcus</strong>
+              <small class="chip-tag tag-male">♂ MALE</small>
+            </div>
+          </div>
+
+          <div class="persona-card" data-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-name="Viktor" data-gender="male">
+            <img src="/images/personas/male_viktor.jpg" alt="Viktor" class="persona-avatar-img">
+            <div class="persona-info">
+              <strong>Viktor</strong>
+              <small class="chip-tag tag-male">♂ MALE</small>
+            </div>
+          </div>
+
+          <div class="persona-card female-persona" data-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-name="Elena" data-gender="female">
+            <img src="/images/personas/female_elena.jpg" alt="Elena" class="persona-avatar-img">
+            <div class="persona-info">
+              <strong>Elena</strong>
+              <small class="chip-tag tag-female">♀ FEMALE</small>
+            </div>
+          </div>
+
+          <div class="persona-card female-persona" data-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-name="Sophia" data-gender="female">
+            <img src="/images/personas/female_sophia.jpg" alt="Sophia" class="persona-avatar-img">
+            <div class="persona-info">
+              <strong>Sophia</strong>
+              <small class="chip-tag tag-female">♀ FEMALE</small>
             </div>
           </div>
         </div>
       </div>
-      <div class="info-note"><strong>Presentation note:</strong> The preview uses a visible graphic treatment so the result is clearly a synthetic demonstration.</div>
-    </div>
 
-    <!-- VOICE -->
-    <div id="voice" class="page">
-      <div class="page-heading">
-        <div><span class="eyebrow">VOICE</span><h1>Voice effects</h1><p>Change playback characteristics for a simple voice-processing demonstration.</p></div>
-        <span class="small-status">AUDIO DEMO</span>
-      </div>
-
-      <div class="two-col">
-        <div class="card">
-          <div id="audioDrop" class="dropzone">
-            <div class="drop-icon">♪</div>
-            <h3>Upload audio</h3>
-            <p>MP3, WAV, OGG or M4A</p>
-            <button id="audioBrowse" class="outline-btn">Choose audio</button>
-            <input id="audioInput" type="file" accept="audio/*" hidden>
+      <!-- Custom Target Upload Dropzone -->
+      <div id="targetDrop" class="dropzone-box" style="margin-top: 12px;">
+        <div id="targetEmptyState" class="dropzone-empty" style="padding: 16px;">
+          <div class="drop-icon-circle small">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
           </div>
-          <div id="audioInfo" class="file-info hidden"></div>
+          <h4>Or Upload Any Custom Target Face</h4>
+          <p>Morph into anyone's face photo</p>
+          <button id="targetBrowseBtn" class="outline-btn tiny-btn" type="button">Upload Custom Person</button>
         </div>
 
-        <div class="card">
-          <div class="card-header"><div><span class="eyebrow">CONTROLS</span><h3>Adjust sound</h3></div><span class="blue-tag">DEMO</span></div>
-          <div class="waveform" id="waveform"></div>
-          <audio id="audioPlayer" controls hidden></audio>
-          <div class="range-control"><label>Pitch <output id="pitchValue">1.00×</output></label><input id="pitch" type="range" min=".7" max="1.35" step=".01" value="1"></div>
-          <div class="range-control"><label>Speed <output id="speedValue">1.00×</output></label><input id="speed" type="range" min=".75" max="1.25" step=".01" value="1"></div>
-          <button id="applyVoice" class="blue-btn full" disabled>Apply effect</button>
-        </div>
-      </div>
-      <div class="info-note"><strong>Presentation note:</strong> This browser prototype changes playback characteristics and does not copy a person's unique voice.</div>
-    </div>
-
-    <!-- LIVE -->
-    <div id="live" class="page">
-      <div class="page-heading">
-        <div><span class="eyebrow">LIVE CAMERA</span><h1>Camera demo</h1><p>Use your webcam with a simple graphic overlay.</p></div>
-        <span id="liveStatus" class="small-status">OFFLINE</span>
-      </div>
-
-      <div class="two-col live-cols">
-        <div class="card">
-          <div class="camera">
-            <video id="camera" autoplay muted playsinline></video>
-            <canvas id="liveCanvas"></canvas>
-            <div id="cameraEmpty" class="camera-empty"><b>○</b><span>Camera is off</span></div>
-            <div class="camera-label">SYNTHETIC DEMO</div>
+        <div id="targetPreviewState" class="dropzone-preview hidden">
+          <div class="image-stage-wrap">
+            <img id="targetPreviewImg" class="preview-img" alt="Target Face">
+            <canvas id="targetLandmarkCanvas" class="landmark-overlay-canvas"></canvas>
+            <div id="targetFaceBox" class="face-detection-box hidden">
+              <span class="face-box-tag">TARGET FACE</span>
+            </div>
           </div>
-          <div class="button-row">
-            <button id="startCamera" class="blue-btn">Start camera</button>
-            <button id="stopCamera" class="outline-btn" disabled>Stop</button>
+          <div class="image-meta-bar">
+            <div class="meta-info">
+              <strong id="targetFileName">Marcus (Target)</strong>
+              <small id="targetMetaDetails">Locked Identity Profile</small>
+            </div>
+            <div class="meta-actions">
+              <button id="targetReplaceBtn" class="outline-btn tiny-btn" title="Replace target">Replace</button>
+              <button id="targetRemoveBtn" class="danger-btn tiny-btn" title="Reset to preset">Reset</button>
+            </div>
           </div>
         </div>
+        <input id="targetInput" type="file" accept="image/*" hidden>
+      </div>
 
-        <div class="card">
-          <div class="card-header"><div><span class="eyebrow">OVERLAY</span><h3>Choose a look</h3></div></div>
-          <button class="look-option selected"><b>○</b><span><strong>Outline</strong><small>Simple face contour</small></span><i>✓</i></button>
-          <button class="look-option"><b>□</b><span><strong>Soft blur</strong><small>Privacy-style effect</small></span><i>○</i></button>
-          <button class="look-option"><b>+</b><span><strong>Grid</strong><small>Graphic face treatment</small></span><i>○</i></button>
-          <div class="range-control live-range"><label>Intensity <output id="liveIntensityValue">55%</output></label><input id="liveIntensity" type="range" min="10" max="100" value="55"></div>
+      <!-- Target Validation Message Box -->
+      <div id="targetValidationBox" class="validation-notice-box hidden">
+        <span class="notice-icon">✓</span>
+        <span id="targetValidationText" class="notice-text">Target identity validated and locked.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morph Tuning & Trigger Bar -->
+  <div class="card morph-controls-card">
+    <div class="controls-row">
+      <!-- Identity Morph Ratio Slider -->
+      <div class="control-slider-box">
+        <div class="morph-slider-header">
+          <span class="morph-badge badge-source">SOURCE (0%)</span>
+          <span class="slider-title">Identity Morph Ratio: <output id="morphRatioValue">65%</output></span>
+          <span class="morph-badge badge-target" id="targetBadgeLabel">TARGET (100%)</span>
+        </div>
+        <input id="morphRatio" class="range-slider" type="range" min="10" max="95" value="65">
+      </div>
+
+      <!-- Skin Harmonization Slider -->
+      <div class="control-slider-box">
+        <div class="morph-slider-header">
+          <span class="slider-title">Skin Tone Harmonization: <output id="skinHarmonizeValue">85%</output></span>
+          <small class="slider-desc">Color temperature & lighting adaptation</small>
+        </div>
+        <input id="skinHarmonize" class="range-slider" type="range" min="10" max="100" value="85">
+      </div>
+    </div>
+
+    <!-- Responsible AI Consent Checkbox -->
+    <div class="consent-agreement-row">
+      <label class="consent-label" for="consentCheck">
+        <input type="checkbox" id="consentCheck" checked>
+        <span class="checkbox-custom"></span>
+        <span class="consent-text">
+          <strong>Responsible AI Confirmation:</strong> I confirm I have permission to use this person's image, and I agree to use this platform responsibly without deceptive intent.
+        </span>
+      </label>
+    </div>
+
+    <!-- Main Morph Action Button -->
+    <div class="action-btn-row">
+      <button id="executeMorphBtn" class="blue-btn big-cta-btn" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <span>MORPH FACE IDENTITY</span>
+      </button>
+    </div>
+
+    <!-- Real Multi-Stage Processing Indicator -->
+    <div id="processingSection" class="processing-status-section hidden">
+      <div class="progress-bar-wrap">
+        <div id="morphProgressBar" class="progress-bar-inner"></div>
+      </div>
+      <div class="stage-status-row">
+        <span id="currentStageText" class="current-stage-title">Detecting face in Source and Target...</span>
+        <span id="stagePercentText" class="stage-percent">20%</span>
+      </div>
+      <ul class="stages-checklist" id="stagesChecklist">
+        <li id="stg-detect" class="stage-step active">1. Detect face in Source and Target images</li>
+        <li id="stg-landmarks" class="stage-step">2. Map 468 biometric facial landmarks</li>
+        <li id="stg-align" class="stage-step">3. Align target face rotation, scale & affine matrix</li>
+        <li id="stg-warp" class="stage-step">4. Execute Delaunay mesh warping & skin harmonization</li>
+        <li id="stg-blend" class="stage-step">5. Seamless feathered boundary blending</li>
+        <li id="stg-finalize" class="stage-step">6. Finalize high-resolution composition</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Result Showcase Section (Revealed upon processing) -->
+  <div id="resultSection" class="result-showcase-section hidden">
+    <div class="card result-card">
+      <div class="result-card-header">
+        <div>
+          <span class="eyebrow">TRANSFORMATION RESULT</span>
+          <h2>Source → Target → Morphed Identity</h2>
+          <p id="resultSubheading">Target face geometrically aligned and blended into source composition.</p>
+        </div>
+        <div class="result-header-actions">
+          <span class="badge-pill green"><i class="pulse-dot"></i> MORPH COMPLETE</span>
+        </div>
+      </div>
+
+      <!-- 3-Way Flow Display: SOURCE → TARGET → RESULT -->
+      <div class="three-way-flow-grid">
+        <div class="flow-card">
+          <div class="flow-label">SOURCE PERSON</div>
+          <div class="flow-img-box">
+            <img id="flowSourceImg" alt="Source">
+          </div>
+          <span class="flow-caption" id="flowSourceCaption">Original Portrait</span>
+        </div>
+
+        <div class="flow-arrow-indicator">
+          <span>+</span>
+          <small>ALIGNED</small>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-label">TARGET IDENTITY</div>
+          <div class="flow-img-box">
+            <img id="flowTargetImg" alt="Target">
+          </div>
+          <span class="flow-caption" id="flowTargetCaption">Target Face</span>
+        </div>
+
+        <div class="flow-arrow-indicator">
+          <span>=</span>
+          <small>TRANSFORMED</small>
+        </div>
+
+        <div class="flow-card highlight-result">
+          <div class="flow-label glow">FINAL MORPHED RESULT</div>
+          <div class="flow-img-box">
+            <img id="flowResultImg" alt="Morphed Result">
+            <span class="watermark-tag">AI TRANSFORMED</span>
+          </div>
+          <span class="flow-caption">Biometric Hybrid</span>
+        </div>
+      </div>
+
+      <!-- Interactive Before / After Split Slider Comparison -->
+      <div class="split-slider-section">
+        <div class="split-slider-header">
+          <div>
+            <span class="eyebrow">INTERACTIVE COMPARISON</span>
+            <h3>Drag slider to compare Source vs Morphed Identity</h3>
+          </div>
+          <span class="slider-hint">Drag handle ↔</span>
+        </div>
+
+        <div class="split-slider-container" id="splitSliderContainer">
+          <!-- Background: Transformed Morphed Result -->
+          <img id="splitResultImg" class="split-img after-img" alt="Transformed Result">
+
+          <!-- Foreground (Clipped): Original Source Person -->
+          <div class="split-clipped-wrap" id="splitClipWrap">
+            <img id="splitSourceImg" class="split-img before-img" alt="Original Source">
+            <span class="split-label before-tag">BEFORE (SOURCE)</span>
+          </div>
+          <span class="split-label after-tag">AFTER (TRANSFORMED)</span>
+
+          <!-- Draggable Divider Handle -->
+          <div class="split-handle" id="splitHandle">
+            <div class="handle-line"></div>
+            <div class="handle-button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8l4 4-4 4M6 8l-4 4 4 4"/></svg>
+            </div>
+            <div class="handle-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Action Bar -->
+      <div class="result-action-bar">
+        <button id="downloadResultBtn" class="blue-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <span>Download Result</span>
+        </button>
+
+        <button id="saveResultBtn" class="outline-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+          <span>Save to Workspace</span>
+        </button>
+
+        <button id="useInLiveCameraBtn" class="emerald-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          <span>Use Result in Live Camera →</span>
+        </button>
+
+        <button id="processAgainBtn" class="ghost-btn">
+          <span>Process Another Morph</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- VOICE STUDIO -->
+<div id="voice" class="page">
+  <div class="page-heading">
+    <div>
+      <span class="eyebrow">FEATURE 2 · NEURAL AUDIO & DSP</span>
+      <h1>AI Voice Studio</h1>
+      <p>Record your voice or upload audio and transform vocal characteristics into 9 targeted identity styles using pitch transposition, formant modulation, and spectral filtering.</p>
+    </div>
+    <div class="header-badges">
+      <span class="working-status"><i class="pulse-dot"></i> DSP ENGINE READY</span>
+    </div>
+  </div>
+
+  <div class="two-col voice-studio-grid">
+    <!-- LEFT COLUMN: INPUT (RECORD OR UPLOAD) -->
+    <div class="card voice-input-card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="eyebrow">INPUT SOURCE</span>
+          <h3>Voice Recording & Audio</h3>
+        </div>
+        <div id="audioSourceBadge" class="status-badge idle">
+          <span class="status-dot"></span>
+          <span id="audioSourceText">No Audio Loaded</span>
+        </div>
+      </div>
+
+      <!-- Input Switch Tabs: Microphone Record vs File Upload -->
+      <div class="voice-tabs">
+        <button class="voice-tab active" id="tabRecordBtn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+          <span>Record Microphone</span>
+        </button>
+        <button class="voice-tab" id="tabUploadBtn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          <span>Upload Audio File</span>
+        </button>
+      </div>
+
+      <!-- Microphone Record Section -->
+      <div id="micRecordSection" class="voice-subpanel">
+        <div class="record-console">
+          <div class="record-pulse-ring" id="recordPulseRing">
+            <button id="micRecordBtn" class="mic-action-btn" type="button" title="Start Recording">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+            </button>
+          </div>
+          <div class="record-timer" id="recordTimer">00:00</div>
+          <p id="recordStatusLabel" class="record-hint">Click microphone to start recording</p>
+          <div class="record-controls-row">
+            <button id="stopRecordBtn" class="outline-btn tiny-btn" type="button" disabled>Stop Recording</button>
+            <button id="resetRecordBtn" class="ghost-btn tiny-btn" type="button" disabled>Discard</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audio File Upload Section -->
+      <div id="fileUploadSection" class="voice-subpanel hidden">
+        <div id="audioDrop" class="dropzone-box" style="padding: 24px;">
+          <div class="drop-icon-circle">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13M9 9l12-2M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm12 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+          </div>
+          <h4>Drop audio file here</h4>
+          <p>MP3, WAV, OGG, M4A or WEBM (Max 25MB)</p>
+          <button id="audioBrowse" class="blue-btn small-btn" type="button">Browse Audio</button>
+          <input id="audioInput" type="file" accept="audio/*" hidden>
+        </div>
+      </div>
+
+      <!-- Loaded Audio Meta Bar -->
+      <div id="audioInfoBar" class="image-meta-bar hidden" style="margin-top: 14px;">
+        <div class="meta-info">
+          <strong id="audioFileName">recording.wav</strong>
+          <small id="audioFileMeta">Duration: 0:06 · 44.1 kHz</small>
+        </div>
+        <div class="meta-actions">
+          <button id="resetAudioBtn" class="danger-btn tiny-btn" type="button">Reset</button>
+        </div>
+      </div>
+
+      <!-- Responsible AI Voice Notice -->
+      <div class="responsible-notice-box small-notice" style="margin-top: 16px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <span><strong>Consent policy:</strong> Voice synthesis must never be used to impersonate an identifiable individual without express authorization.</span>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: TARGET STYLES & DSP PROCESSOR -->
+    <div class="card voice-dsp-card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="eyebrow">TRANSFORMATION PROFILE</span>
+          <h3 id="currentVoiceTitle">Vocal Target: Female (Sleek ♀)</h3>
+        </div>
+        <span class="badge-pill cyan" id="dspStatusBadge">DSP ACTIVE</span>
+      </div>
+
+      <!-- 9 Voice Styles Selection Grid -->
+      <div class="voice-styles-section">
+        <span class="section-sublabel">CHOOSE TARGET VOCAL IDENTITY</span>
+        <div class="voice-presets-grid" id="soundPresetsGrid">
+          <!-- 1. Female -->
+          <div class="sound-card active" data-sound="female" data-name="Female (Sleek ♀)" data-pitch="1.28">
+            <span class="sound-icon">✨</span>
+            <div class="sound-card-text">
+              <strong>Female (Sleek ♀)</strong>
+              <small>+4 st · Feminine formants</small>
+            </div>
+          </div>
+
+          <!-- 2. Male -->
+          <div class="sound-card" data-sound="male" data-name="Male (Deep ♂)" data-pitch="0.80">
+            <span class="sound-icon">🎙️</span>
+            <div class="sound-card-text">
+              <strong>Male (Deep ♂)</strong>
+              <small>-4 st · Low chest resonance</small>
+            </div>
+          </div>
+
+          <!-- 3. Child -->
+          <div class="sound-card" data-sound="child" data-name="Child (Bright)" data-pitch="1.55">
+            <span class="sound-icon">👶</span>
+            <div class="sound-card-text">
+              <strong>Child (Bright)</strong>
+              <small>+8 st · Youthful acoustic shift</small>
+            </div>
+          </div>
+
+          <!-- 4. Elderly -->
+          <div class="sound-card" data-sound="elderly" data-name="Elderly (Warm)" data-pitch="0.88">
+            <span class="sound-icon">👴</span>
+            <div class="sound-card-text">
+              <strong>Elderly (Warm)</strong>
+              <small>-2 st · Soft transients & vibrato</small>
+            </div>
+          </div>
+
+          <!-- 5. Robotic -->
+          <div class="sound-card" data-sound="robotic" data-name="Robotic (Cyber Android)" data-pitch="1.00">
+            <span class="sound-icon">🤖</span>
+            <div class="sound-card-text">
+              <strong>Robotic</strong>
+              <small>Digital vocoder ring</small>
+            </div>
+          </div>
+
+          <!-- 6. Deep -->
+          <div class="sound-card" data-sound="deep" data-name="Deep (Sub-Bass Rumble)" data-pitch="0.68">
+            <span class="sound-icon">🧔</span>
+            <div class="sound-card-text">
+              <strong>Deep (Sub-Bass)</strong>
+              <small>-7 st · 75Hz acoustic rumble</small>
+            </div>
+          </div>
+
+          <!-- 7. High Pitch -->
+          <div class="sound-card" data-sound="high_pitch" data-name="High Pitch (Helium)" data-pitch="1.70">
+            <span class="sound-icon">🎈</span>
+            <div class="sound-card-text">
+              <strong>High Pitch</strong>
+              <small>+9 st · Helium frequency lift</small>
+            </div>
+          </div>
+
+          <!-- 8. Cartoon -->
+          <div class="sound-card" data-sound="cartoon" data-name="Cartoon (Playful)" data-pitch="1.42">
+            <span class="sound-icon">🎭</span>
+            <div class="sound-card-text">
+              <strong>Cartoon</strong>
+              <small>+6 st · Exaggerated resonance</small>
+            </div>
+          </div>
+
+          <!-- 9. Character -->
+          <div class="sound-card" data-sound="character" data-name="Character (Tactical Comms)" data-pitch="0.95">
+            <span class="sound-icon">📻</span>
+            <div class="sound-card-text">
+              <strong>Character Comms</strong>
+              <small>Military radio transceiver</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Dynamic Waveform Visualizer -->
+      <div class="waveform-box">
+        <div class="waveform-header">
+          <span>SPECTRAL FREQUENCY VISUALIZER</span>
+          <span class="waveform-live-dot"><i class="pulse-dot"></i> AUDIO BUS</span>
+        </div>
+        <div class="waveform" id="waveform"></div>
+      </div>
+
+      <!-- Dual Before/After Audio Players & Toggle -->
+      <div class="audio-players-wrap">
+        <div class="audio-toggle-bar">
+          <span class="toggle-title">A/B AUDIO COMPARISON</span>
+          <div class="toggle-pill-group">
+            <button class="toggle-pill" id="playOriginalBtn" type="button" disabled>Original Voice</button>
+            <button class="toggle-pill active" id="playTransformedBtn" type="button" disabled>Transformed Voice</button>
+          </div>
+        </div>
+        <audio id="audioPlayer" controls style="width: 100%; margin: 8px 0 14px;"></audio>
+      </div>
+
+      <!-- Sliders for Fine-Tuning Voice Parameters -->
+      <div class="voice-sliders-group">
+        <div class="range-control">
+          <div class="morph-slider-header">
+            <span class="morph-badge badge-source">LOWER (-8 st)</span>
+            <span class="slider-title">Pitch Transposition: <output id="pitchValue">1.28×</output></span>
+            <span class="morph-badge badge-target">HIGHER (+10 st)</span>
+          </div>
+          <input id="pitch" class="range-slider" type="range" min="0.60" max="1.80" step="0.01" value="1.28">
+        </div>
+
+        <div class="range-control" style="margin-top: 8px;">
+          <div class="morph-slider-header">
+            <span class="slider-title">Formant & Chest Resonance: <output id="depthValue">80%</output></span>
+            <small class="slider-desc">Acoustic throat cavity displacement</small>
+          </div>
+          <input id="filterDepth" class="range-slider" type="range" min="10" max="100" value="80">
+        </div>
+
+        <div class="range-control" style="margin-top: 8px;">
+          <div class="morph-slider-header">
+            <span class="slider-title">Spatial Echo & Reverb Mix: <output id="echoMixValue">15%</output></span>
+            <small class="slider-desc">Acoustic room depth</small>
+          </div>
+          <input id="echoMix" class="range-slider" type="range" min="0" max="80" value="15">
+        </div>
+      </div>
+
+      <!-- Voice Action Buttons -->
+      <div class="button-row" style="margin-top: 18px;">
+        <button id="applyVoice" class="blue-btn" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span>Transform Voice</span>
+        </button>
+        <button id="downloadVoiceBtn" class="outline-btn" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <span>Download Audio</span>
+        </button>
+        <button id="saveVoice" class="ghost-btn" disabled>Save to Work</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- LIVE CAMERA MORPHING -->
+<div id="live" class="page">
+  <div class="page-heading">
+    <div>
+      <span class="eyebrow">FEATURE 3 · REAL-TIME COMPUTER VISION</span>
+      <h1>Live Camera Face Morphing & Recording</h1>
+      <p>Stream your webcam with real-time facial landmark tracking. Your face is transformed continuously frame-by-frame into the locked target identity and recorded directly to high-definition WebM video.</p>
+    </div>
+    <div class="header-badges">
+      <span id="liveStatus" class="working-status"><i class="pulse-dot"></i> CAMERA STANDBY</span>
+      <span id="fpsBadge" class="fps-pill">FPS: --</span>
+    </div>
+  </div>
+
+  <div class="two-col live-camera-layout">
+    <!-- LEFT: MAIN CINEMATIC CAMERA STAGE -->
+    <div class="card camera-stage-card">
+      <div class="camera-viewport-wrap" id="cameraViewport">
+        <!-- Live Video Element (Hidden or mirrored source) -->
+        <video id="camera" autoplay muted playsinline></video>
+
+        <!-- Transformed Morph Rendering Canvas -->
+        <canvas id="liveCanvas"></canvas>
+
+        <!-- Camera Off Empty State -->
+        <div id="cameraEmpty" class="camera-empty-state">
+          <div class="empty-icon-wrap">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </div>
+          <h3>Webcam is Currently Inactive</h3>
+          <p>Click "Start Camera" below to grant camera access and activate real-time face tracking.</p>
+          <button id="startCameraHeroBtn" class="blue-btn small-btn" type="button">Start Camera Now</button>
+        </div>
+
+        <!-- Live Camera HUD Overlays -->
+        <div class="camera-hud-layer" id="cameraHudLayer">
+          <!-- Top Left: Active Target Info -->
+          <div class="hud-pill top-left">
+            <span class="hud-dot green"></span>
+            <span id="hudTargetText">TARGET: MARCUS (LOCKED)</span>
+          </div>
+
+          <!-- Top Right: Real-time Telemetry & Tracking Status -->
+          <div class="hud-telemetry-cluster top-right">
+            <div id="hudFaceDetected" class="telemetry-item inactive">Face Detected ✕</div>
+            <div id="hudTrackingActive" class="telemetry-item inactive">Tracking Active ✕</div>
+            <div id="hudMorphActive" class="telemetry-item inactive">Morph Active ✕</div>
+          </div>
+
+          <!-- Bottom Left: Recording Timer Badge -->
+          <div id="recordingTimerBadge" class="recording-badge hidden">
+            <span class="rec-red-dot"></span>
+            <span id="recTimerText">REC 00:00</span>
+          </div>
+
+          <!-- Bottom Right: Responsible AI Watermark -->
+          <div class="camera-watermark">
+            <span>AI TRANSFORMED</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera Action Controls Bar -->
+      <div class="camera-controls-toolbar">
+        <div class="toolbar-primary-group">
+          <!-- Start / Stop Camera -->
+          <button id="startCamera" class="blue-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <span>Start Camera</span>
+          </button>
+          <button id="stopCamera" class="outline-btn" disabled>
+            <span>Stop Camera</span>
+          </button>
+
+          <!-- Start / Stop Morph -->
+          <button id="toggleMorphBtn" class="cyan-btn" disabled>
+            <span id="toggleMorphIcon">⚡</span>
+            <span id="toggleMorphText">Start Morph</span>
+          </button>
+        </div>
+
+        <div class="toolbar-recording-group">
+          <!-- Live Canvas Stream Recording -->
+          <button id="startRecordBtn" class="danger-btn record-action-btn" disabled>
+            <span class="record-red-circle"></span>
+            <span>Record Video</span>
+          </button>
+          <button id="stopRecordBtn" class="outline-btn" disabled>
+            <span>Stop Recording</span>
+          </button>
+
+          <!-- Snapshot Capture -->
+          <button id="capturePhoto" class="outline-btn" disabled title="Capture high-res morphed frame">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="4"/><path d="M5 7h2l2-3h6l2 3h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/></svg>
+            <span>Capture Frame</span>
+          </button>
         </div>
       </div>
     </div>
+
+    <!-- RIGHT: LOCKED TARGET FACE & REAL-TIME TUNING -->
+    <div class="card live-sidebar-card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="eyebrow">LOCKED IDENTITY</span>
+          <h3>Target Face</h3>
+        </div>
+        <button id="changeTargetBtn" class="outline-btn tiny-btn" type="button">Change Target</button>
+      </div>
+
+      <!-- Small Preview Card of Currently Locked Target -->
+      <div class="locked-target-preview-card" id="lockedTargetCard">
+        <div class="target-avatar-wrap">
+          <img id="lockedTargetImg" src="/images/personas/male_marcus.jpg" alt="Locked Target Face">
+          <div class="locked-badge-pill">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>LOCKED</span>
+          </div>
+        </div>
+        <div class="locked-target-details">
+          <strong id="lockedTargetName">Marcus</strong>
+          <span class="chip-tag tag-male" id="lockedTargetGenderTag">♂ MALE IDENTITY</span>
+          <p id="lockedTargetDesc">Target face follows head rotation, tilt, scale, and facial expression in real time.</p>
+        </div>
+      </div>
+
+      <!-- Target Selection Grid (Can be toggled or selected anytime) -->
+      <div class="live-target-selector-box" id="liveTargetSelectorBox">
+        <span class="section-sublabel">CHOOSE TARGET PERSONA</span>
+        <div class="persona-selector-grid mini-grid" id="livePersonaGrid">
+          <div class="persona-card active" data-live-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-name="Marcus" data-gender="male">
+            <img src="/images/personas/male_marcus.jpg" alt="Marcus" class="persona-avatar-img">
+            <div class="persona-info"><strong>Marcus</strong><small class="chip-tag tag-male">♂ MALE</small></div>
+          </div>
+          <div class="persona-card" data-live-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-name="Viktor" data-gender="male">
+            <img src="/images/personas/male_viktor.jpg" alt="Viktor" class="persona-avatar-img">
+            <div class="persona-info"><strong>Viktor</strong><small class="chip-tag tag-male">♂ MALE</small></div>
+          </div>
+          <div class="persona-card female-persona" data-live-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-name="Elena" data-gender="female">
+            <img src="/images/personas/female_elena.jpg" alt="Elena" class="persona-avatar-img">
+            <div class="persona-info"><strong>Elena</strong><small class="chip-tag tag-female">♀ FEMALE</small></div>
+          </div>
+          <div class="persona-card female-persona" data-live-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-name="Sophia" data-gender="female">
+            <img src="/images/personas/female_sophia.jpg" alt="Sophia" class="persona-avatar-img">
+            <div class="persona-info"><strong>Sophia</strong><small class="chip-tag tag-female">♀ FEMALE</small></div>
+          </div>
+        </div>
+
+        <!-- Custom Upload for Live Target -->
+        <label for="liveCustomTargetInput" class="target-upload-box small-upload-box" style="margin-top: 8px;">
+          <span class="target-upload-icon">+</span>
+          <div class="target-upload-text">
+            <strong>Upload Custom Live Target Face</strong>
+            <span>Use any portrait photo for live tracking</span>
+          </div>
+          <input id="liveCustomTargetInput" type="file" accept="image/*" hidden>
+        </label>
+      </div>
+
+      <!-- Real-Time Sliders for Live Morph -->
+      <div class="live-controls-group" style="margin-top: 14px;">
+        <span class="section-sublabel">REAL-TIME BLEND CONTROLS</span>
+        
+        <div class="range-control live-range">
+          <div class="morph-slider-header">
+            <span class="morph-badge badge-source">WEBCAM (0%)</span>
+            <span class="slider-title">Live Morph Ratio: <output id="liveIntensityValue">65%</output></span>
+            <span class="morph-badge badge-target">TARGET (100%)</span>
+          </div>
+          <input id="liveIntensity" class="range-slider" type="range" min="15" max="100" value="65">
+        </div>
+
+        <div class="range-control live-range" style="margin-top: 8px;">
+          <div class="morph-slider-header">
+            <span class="slider-title">Mesh Alignment Scale: <output id="liveScaleValue">100%</output></span>
+            <small class="slider-desc">Proportional facial keypoint sizing</small>
+          </div>
+          <input id="liveScale" class="range-slider" type="range" min="70" max="140" value="100">
+        </div>
+
+        <div class="range-control live-range" style="margin-top: 8px;">
+          <div class="morph-slider-header">
+            <span class="slider-title">Skin Tone Harmonization: <output id="liveSkinToneValue">80%</output></span>
+            <small class="slider-desc">Webcam lighting temperature match</small>
+          </div>
+          <input id="liveSkinTone" class="range-slider" type="range" min="10" max="100" value="80">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recorded Video Preview Modal / Drawer -->
+  <div id="recordingModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <span class="eyebrow">RECORDED OUTPUT</span>
+          <h3>Live Transformed Video Preview</h3>
+        </div>
+        <button id="closeModalBtn" class="modal-close-btn" type="button">✕</button>
+      </div>
+      <div class="modal-body">
+        <video id="recordedVideoPlayer" controls autoplay loop playsinline class="recorded-preview-video"></video>
+        <div class="recording-meta-row">
+          <div><span class="eyebrow">TARGET IDENTITY:</span> <strong id="recordedTargetName">Marcus</strong></div>
+          <div><span class="eyebrow">FORMAT:</span> <strong>WebM (Canvas Stream)</strong></div>
+          <div><span class="eyebrow">DISCLOSURE:</span> <strong class="badge-pill cyan">AI TRANSFORMED</strong></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="downloadRecordedVideoBtn" class="blue-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <span>Download Video (.webm)</span>
+        </button>
+        <button id="saveRecordedVideoBtn" class="outline-btn">
+          <span>Save to Workspace</span>
+        </button>
+        <button id="dismissModalBtn" class="ghost-btn">
+          <span>Close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
     <!-- PROJECTS -->
-    <div id="projects" class="page">
-      <div class="page-heading">
-        <div><span class="eyebrow">PROJECTS</span><h1>Your work</h1><p>Projects saved during this browser session.</p></div>
-        <button class="blue-btn" data-go="face">New project</button>
-      </div>
-      <div id="projectGrid" class="project-grid"></div>
-    </div>
+<div id="projects" class="page">
+  <div class="page-heading">
+    <div><span class="eyebrow">PROJECTS</span><h1>Your work</h1><p>Projects saved during this browser session.</p></div>
+    <button class="blue-btn" data-go="face">New project</button>
+  </div>
+  <div id="projectGrid" class="project-grid"></div>
+</div>
+
   </main>
 </section>
 
-<script src="script.js"></script>
+<!-- MediaPipe Face Mesh & Camera Utils for Live 468 Landmark Tracking -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+<!-- MaskLab Application Script -->
+<script src="/js/script.js"></script>
+
 </body>
 </html>
