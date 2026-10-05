@@ -68,7 +68,7 @@ class MorphPipeline {
     // Stage 3: Transformation, Warping, Skin Harmonization & Blending
     stages.push({
       stage: 'transformation',
-      name: 'Executing Delaunay mesh warping & skin tone harmonization...',
+      name: 'Executing holistic facial identity projection & skin tone harmonization...',
       timeMs: Date.now() - startTime
     });
 

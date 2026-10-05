@@ -110,6 +110,12 @@
             <span id="toggleMorphIcon">⚡</span>
             <span id="toggleMorphText">Start Morph</span>
           </button>
+
+          <!-- CV Debug Mode Toggle -->
+          <button id="debugToggleBtn" class="outline-btn" type="button" title="Toggle Computer Vision 3D Pose & Landmark Telemetry">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+            <span id="debugToggleText">Debug: OFF</span>
+          </button>
         </div>
 
         <div class="toolbar-recording-group">
@@ -163,6 +169,7 @@
           <span class="section-sublabel">TARGET BIOMETRIC ISOLATION</span>
           <span id="targetExtractionBadge" class="detection-badge blue">Face Detected ✓</span>
         </div>
+        <div id="targetQualityBadge" class="detection-badge blue" style="margin: 6px 0 10px 0; font-size: 10.5px; display: inline-flex;">TARGET QUALITY: GOOD ✓</div>
         <div class="target-preview-stage">
           <div class="target-avatar-isolated-wrap">
             <!-- Canvas displaying purely isolated facial oval (zero background) -->

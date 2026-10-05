@@ -464,3 +464,23 @@ h4{font-size:14px;margin:4px 0;font-weight:700;color:var(--white)}
   .hero-title{font-size:42px}
   .project-grid{grid-template-columns:1fr}
 }
+
+/* CV Debug Mode & Target Quality Badge */
+#debugToggleBtn.active {
+  background: rgba(37, 99, 235, 0.25) !important;
+  border-color: #3b82f6 !important;
+  color: #93c5fd !important;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
+}
+
+#targetQualityBadge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
