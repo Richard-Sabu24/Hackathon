@@ -62,6 +62,8 @@ class MorphPipeline {
       sourceDetection.resolution,
       targetDetection.resolution
     );
+    alignment.targetBbox = targetDetection.bbox;
+    alignment.sourceBbox = sourceDetection.bbox;
 
     // Stage 3: Transformation, Warping, Skin Harmonization & Blending
     stages.push({

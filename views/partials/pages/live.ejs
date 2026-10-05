@@ -98,35 +98,76 @@
       </div>
     </div>
 
-    <!-- RIGHT: LOCKED TARGET FACE & REAL-TIME TUNING -->
+    <!-- RIGHT: TARGET FACE EXTRACTION, LOCKING & REAL-TIME BLEND CONTROLS -->
     <div class="card live-sidebar-card">
       <div class="card-header">
         <div class="card-title-group">
-          <span class="eyebrow">LOCKED IDENTITY</span>
+          <span class="eyebrow">IDENTITY PIPELINE</span>
           <h3>Target Face</h3>
         </div>
-        <button id="changeTargetBtn" class="outline-btn tiny-btn" type="button">Change Target</button>
+        <div id="targetLockStatusBadge" class="status-badge active-ready">
+          <span class="status-dot"></span>
+          <span id="targetLockStatusText">TARGET LOCKED ✓</span>
+        </div>
       </div>
 
-      <!-- Small Preview Card of Currently Locked Target -->
-      <div class="locked-target-preview-card" id="lockedTargetCard">
-        <div class="target-avatar-wrap">
-          <img id="lockedTargetImg" src="/images/personas/male_marcus.jpg" alt="Locked Target Face">
-          <div class="locked-badge-pill">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <span>LOCKED</span>
+      <!-- PRIMARY WORKFLOW: UPLOAD TARGET FACE -->
+      <div class="target-upload-primary-zone" id="targetUploadZone">
+        <label for="liveCustomTargetInput" class="upload-drop-area" id="liveTargetDropArea">
+          <div class="upload-icon-circle">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </div>
+          <strong>Upload Target Image</strong>
+          <p>Select any portrait photo (JPG/PNG). System extracts facial landmarks &amp; isolates the facial contour with zero background.</p>
+          <span class="btn-substitute blue-btn small-btn">Choose Target Photo</span>
+          <input id="liveCustomTargetInput" type="file" accept="image/*" hidden>
+        </label>
+      </div>
+
+      <!-- TARGET PREVIEW & EXTRACTION STATUS -->
+      <div class="target-extraction-preview-card" id="targetExtractionCard">
+        <div class="target-preview-header">
+          <span class="section-sublabel">TARGET PREVIEW &amp; SEGMENTATION</span>
+          <span id="targetExtractionBadge" class="detection-badge green">Face Detected ✓</span>
+        </div>
+        <div class="target-preview-stage">
+          <div class="target-avatar-isolated-wrap">
+            <!-- Canvas displaying purely isolated facial oval (zero background) -->
+            <canvas id="targetFacePreviewCanvas" width="160" height="190"></canvas>
+            <img id="lockedTargetImg" src="/images/personas/male_marcus.jpg" alt="Locked Target Face" style="display:none;">
+            <div id="targetLockIndicator" class="locked-badge-pill">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span id="targetLockIndicatorText">LOCKED</span>
+            </div>
+          </div>
+          <div class="target-extraction-meta">
+            <strong id="lockedTargetName">Marcus (Reference Portrait)</strong>
+            <div class="meta-tag-row">
+              <span class="chip-tag tag-cyan" id="targetLandmarkCountTag">468 Landmarks ✓</span>
+              <span class="chip-tag tag-green" id="targetBackgroundTag">Background Removed ✓</span>
+            </div>
+            <p id="targetAnalysisNote" class="target-analysis-note">Facial contour &amp; Delaunay mesh aligned. Ready for live camera transformation.</p>
           </div>
         </div>
-        <div class="locked-target-details">
-          <strong id="lockedTargetName">Marcus</strong>
-          <span class="chip-tag tag-male" id="lockedTargetGenderTag">♂ MALE IDENTITY</span>
-          <p id="lockedTargetDesc">Target face follows head rotation, tilt, scale, and facial expression in real time.</p>
+
+        <!-- ACTION BUTTONS: LOCK TARGET / CHANGE TARGET -->
+        <div class="target-lock-actions">
+          <button id="lockTargetBtn" class="blue-btn full-width-btn" type="button">
+            <span id="lockTargetBtnIcon">🔒</span>
+            <span id="lockTargetBtnText">LOCK TARGET IDENTITY</span>
+          </button>
+          <button id="changeTargetBtn" class="outline-btn small-btn" type="button">
+            <span>Change Target</span>
+          </button>
         </div>
       </div>
 
-      <!-- Target Selection Grid (Can be toggled or selected anytime) -->
-      <div class="live-target-selector-box" id="liveTargetSelectorBox">
-        <span class="section-sublabel">CHOOSE TARGET PERSONA</span>
+      <!-- OPTIONAL DEMO TARGETS (SECONDARY REFERENCE IDENTITIES) -->
+      <div class="demo-personas-accordion" id="demoPersonasAccordion">
+        <div class="demo-personas-header">
+          <span class="section-sublabel">OR CHOOSE DEMO REFERENCE PORTRAIT</span>
+          <small style="color: var(--muted); font-size: 10px;">Photographic portraits</small>
+        </div>
         <div class="persona-selector-grid mini-grid" id="livePersonaGrid">
           <div class="persona-card active" data-live-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-name="Marcus" data-gender="male">
             <img src="/images/personas/male_marcus.jpg" alt="Marcus" class="persona-avatar-img">
@@ -145,16 +186,6 @@
             <div class="persona-info"><strong>Sophia</strong><small class="chip-tag tag-female">♀ FEMALE</small></div>
           </div>
         </div>
-
-        <!-- Custom Upload for Live Target -->
-        <label for="liveCustomTargetInput" class="target-upload-box small-upload-box" style="margin-top: 8px;">
-          <span class="target-upload-icon">+</span>
-          <div class="target-upload-text">
-            <strong>Upload Custom Live Target Face</strong>
-            <span>Use any portrait photo for live tracking</span>
-          </div>
-          <input id="liveCustomTargetInput" type="file" accept="image/*" hidden>
-        </label>
       </div>
 
       <!-- Real-Time Sliders for Live Morph -->

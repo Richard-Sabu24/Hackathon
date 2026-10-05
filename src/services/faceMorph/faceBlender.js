@@ -40,8 +40,24 @@ class FaceBlender {
     const cropLeft = Math.max(0, cx - rx);
     const cropTop = Math.max(0, cy - ry);
 
-    // Step 1: Scale and rotate target face to match source geometry
+    // Step 1: Extract target face strictly from facial bounding box (eliminating photo background)
     let transformedTarget = sharp(targetBuffer);
+    if (alignment.targetBbox && alignment.targetBbox.width > 20 && alignment.targetBbox.height > 20) {
+      try {
+        const tMeta = await sharp(targetBuffer).metadata();
+        const marginX = Math.round(alignment.targetBbox.width * 0.12);
+        const marginY = Math.round(alignment.targetBbox.height * 0.12);
+        const left = Math.max(0, alignment.targetBbox.x - marginX);
+        const top = Math.max(0, alignment.targetBbox.y - marginY);
+        const width = Math.min(tMeta.width - left, alignment.targetBbox.width + marginX * 2);
+        const height = Math.min(tMeta.height - top, alignment.targetBbox.height + marginY * 2);
+        if (width > 20 && height > 20) {
+          transformedTarget = transformedTarget.extract({ left, top, width, height });
+        }
+      } catch (err) {
+        console.warn('Target facial bbox extract warning, continuing with full image:', err.message);
+      }
+    }
 
     if (Math.abs(rotationDeg) > 0.5) {
       transformedTarget = transformedTarget.rotate(rotationDeg, {
