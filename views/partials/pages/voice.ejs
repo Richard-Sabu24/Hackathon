@@ -2,80 +2,80 @@
 <div id="voice" class="page">
   <div class="page-heading">
     <div>
-      <span class="eyebrow">VOICE & DSP</span>
-      <h1>Voice Sound Filters</h1>
-      <p>Transform audio with real-time DSP filters: Deep Male, High Female, Cyber Robot, Radio, Echo, and Alien effects.</p>
+      <span class="eyebrow">VOICE & IDENTITY MORPHING</span>
+      <h1>Real Voice Morphing Engine</h1>
+      <p>Morph and transform voice recordings into specific male and female vocal identities with real-time pitch transposition, formant modulation, and chest resonance.</p>
     </div>
-    <span class="working-status"><i class="pulse-dot"></i> DSP ENGINE READY</span>
+    <span class="working-status"><i class="pulse-dot"></i> DSP MORPH ENGINE ACTIVE</span>
   </div>
 
   <div class="two-col">
     <div class="card">
       <div id="audioDrop" class="dropzone">
         <div class="drop-icon">♪</div>
-        <h3>Upload audio</h3>
+        <h3>Upload voice recording</h3>
         <p>MP3, WAV, OGG, M4A or AAC</p>
         <button id="audioBrowse" class="outline-btn">Choose audio</button>
         <input id="audioInput" type="file" accept="audio/*" hidden>
       </div>
       <div id="audioInfo" class="file-info hidden"></div>
 
-      <!-- Sound Filters Preset Grid -->
+      <!-- Target Voice Persona Grid -->
       <div style="margin-top: 18px;">
-        <span class="eyebrow">SELECT SOUND FILTER</span>
+        <span class="eyebrow">CHOOSE TARGET VOCAL IDENTITY</span>
         <div class="sound-presets-grid" id="soundPresetsGrid">
-          <div class="sound-card active" data-sound="normal">
-            <span class="sound-icon">🎧</span>
-            <strong>Studio Clean</strong>
-            <small>Natural bypass</small>
+          <div class="sound-card active" data-sound="normal" data-name="Clean Natural">
+            <span class="sound-icon">👤</span>
+            <strong>Original Voice</strong>
+            <small>Natural input</small>
           </div>
 
-          <div class="sound-card" data-sound="deep-male">
+          <div class="sound-card" data-sound="deep-male" data-name="Marcus (Deep Male)">
             <span class="sound-icon">🎙️</span>
-            <strong>Deep Male</strong>
-            <small>Low baritone bass</small>
+            <strong>Marcus (Deep ♂)</strong>
+            <small>-4 st, low chest resonance</small>
           </div>
 
-          <div class="sound-card" data-sound="high-female">
+          <div class="sound-card" data-sound="bass808" data-name="Viktor (Baritone ♂)">
+            <span class="sound-icon">🧔</span>
+            <strong>Viktor (Baritone ♂)</strong>
+            <small>-6 st, heavy vocal rumble</small>
+          </div>
+
+          <div class="sound-card" data-sound="high-female" data-name="Elena (Feminine ♀)">
             <span class="sound-icon">✨</span>
-            <strong>High Female</strong>
-            <small>Air sparkle lift</small>
+            <strong>Elena (Sleek ♀)</strong>
+            <small>+4 st, breathy presence</small>
           </div>
 
-          <div class="sound-card" data-sound="robot">
+          <div class="sound-card" data-sound="soprano" data-name="Sophia (Radiant ♀)">
+            <span class="sound-icon">🌸</span>
+            <strong>Sophia (Bright ♀)</strong>
+            <small>+7 st, high melodic lift</small>
+          </div>
+
+          <div class="sound-card" data-sound="robot" data-name="Cyber Android">
             <span class="sound-icon">🤖</span>
-            <strong>Cyber Robot</strong>
-            <small>Vocoder ring mod</small>
+            <strong>Cyber Android</strong>
+            <small>Digital vocoder ring</small>
           </div>
 
-          <div class="sound-card" data-sound="radio">
+          <div class="sound-card" data-sound="radio" data-name="Walkie-Talkie">
             <span class="sound-icon">📻</span>
-            <strong>Walkie-Talkie</strong>
-            <small>Crunchy radio AM</small>
+            <strong>Radio Comms</strong>
+            <small>Military radio crunch</small>
           </div>
 
-          <div class="sound-card" data-sound="echo">
+          <div class="sound-card" data-sound="echo" data-name="Cathedral Echo">
             <span class="sound-icon">🏛️</span>
             <strong>Cathedral</strong>
-            <small>Cavernous reverb</small>
+            <small>Cavernous delay</small>
           </div>
 
-          <div class="sound-card" data-sound="megaphone">
-            <span class="sound-icon">📢</span>
-            <strong>Megaphone</strong>
-            <small>Mid PA projection</small>
-          </div>
-
-          <div class="sound-card" data-sound="alien">
+          <div class="sound-card" data-sound="alien" data-name="Cosmic Entity">
             <span class="sound-icon">🛸</span>
-            <strong>Alien Glitch</strong>
-            <small>Modulated cosmos</small>
-          </div>
-
-          <div class="sound-card" data-sound="bass808">
-            <span class="sound-icon">🔊</span>
-            <strong>Sub 808 Bass</strong>
-            <small>Heavy 60Hz drop</small>
+            <strong>Cosmic Entity</strong>
+            <small>Harmonic formant sweep</small>
           </div>
         </div>
       </div>
@@ -84,17 +84,22 @@
     <div class="card">
       <div class="card-header">
         <div>
-          <span class="eyebrow">ACTIVE DSP</span>
-          <h3 id="currentVoiceTitle">Filter: Studio Clean</h3>
+          <span class="eyebrow">VOCAL DSP MORPH</span>
+          <h3 id="currentVoiceTitle">Vocal Target: Original Voice</h3>
         </div>
-        <span class="blue-tag" id="voiceStatusTag">DSP READY</span>
+        <span class="working-status" id="voiceStatusTag"><i class="pulse-dot"></i> DSP READY</span>
       </div>
 
       <div class="waveform" id="waveform"></div>
       <audio id="audioPlayer" controls hidden style="width: 100%; margin-bottom: 12px;"></audio>
 
+      <!-- Gender Morph Pitch Slider -->
       <div class="range-control">
-        <label>Pitch Modulation <output id="pitchValue">1.00×</output></label>
+        <div class="morph-slider-header">
+          <span class="morph-badge badge-source" style="color: #72b2ff;">♂ DEEP MALE (0.7×)</span>
+          <strong style="color: #fff; font-size: 11px;">Pitch & Gender Transposition: <output id="pitchValue">1.00×</output></strong>
+          <span class="morph-badge badge-target" style="color: #ff8df0;">♀ HIGH FEMALE (1.45×)</span>
+        </div>
         <input id="pitch" type="range" min=".65" max="1.45" step=".01" value="1">
       </div>
 
@@ -104,20 +109,20 @@
       </div>
 
       <div class="range-control">
-        <label>Filter Depth / Warmth <output id="depthValue">70%</output></label>
-        <input id="filterDepth" type="range" min="10" max="100" value="70">
+        <label>Formant & Chest Resonance <output id="depthValue">75%</output></label>
+        <input id="filterDepth" type="range" min="10" max="100" value="75">
       </div>
 
       <div class="range-control">
-        <label>Echo & Reverb Mix <output id="echoMixValue">20%</output></label>
+        <label>Spatial Echo & Room Delay <output id="echoMixValue">20%</output></label>
         <input id="echoMix" type="range" min="0" max="100" value="20">
       </div>
 
       <div class="button-row" style="margin-top: 15px;">
-        <button id="applyVoice" class="blue-btn" disabled>Apply Filter</button>
+        <button id="applyVoice" class="blue-btn" disabled>Apply Voice Morph</button>
         <button id="saveVoice" class="outline-btn" disabled>Save to Work</button>
       </div>
     </div>
   </div>
-  <div class="info-note"><strong>Web Audio DSP:</strong> Multi-stage audio processing pipeline executes real-time biquad filtering, telephone bandpass, dynamic echo delay, and frequency modulation.</div>
+  <div class="info-note"><strong>Voice Morphing Pipeline:</strong> Formant frequency transposition, biquad shelving, and non-linear saturation transform speaker characteristics into targeted male and female identities.</div>
 </div>

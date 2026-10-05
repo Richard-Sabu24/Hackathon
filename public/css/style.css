@@ -96,6 +96,32 @@ h3{margin:4px 0;font-size:17px}
 .face-canvas-wrap{position:relative;width:100%;height:100%;display:grid;place-items:center}
 .face-canvas-wrap canvas{max-width:100%;max-height:390px;object-fit:contain;border-radius:8px}
 
+/* Persona Face Selector Grid */
+.persona-selector-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.persona-card{background:#111316;border:1px solid #282c31;border-radius:10px;padding:8px;cursor:pointer;text-align:center;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:6px}
+.persona-card:hover{background:#181b20;border-color:#3d434c;transform:translateY(-1px)}
+.persona-card.active{background:#111c2e;border-color:#2677ff;box-shadow:inset 0 0 0 1px #2677ff}
+.persona-card.active.female-persona{background:#23112b;border-color:#e040fb;box-shadow:inset 0 0 0 1px #e040fb}
+.persona-avatar-img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #282c31}
+.persona-card.active .persona-avatar-img{border-color:#2677ff}
+.persona-card.active.female-persona .persona-avatar-img{border-color:#e040fb}
+.persona-info{display:flex;flex-direction:column;align-items:center;gap:1px}
+.persona-info strong{font-size:11px;color:#fff}
+.persona-info small{font-size:8.5px;color:#78808a}
+
+/* Morph Blend Slider with Dual Badges */
+.morph-slider-header{display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:4px}
+.morph-badge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px}
+.badge-source{background:#1e242d;color:#8ab4f8}
+.badge-target{background:#2b1c31;color:#ff8df0}
+
+/* Target Face Upload Mini Dropzone */
+.target-upload-box{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#0d0f11;border:1px dashed #343942;border-radius:9px;margin-bottom:14px;cursor:pointer}
+.target-upload-box:hover{border-color:#4a515c;background:#121518}
+.target-upload-icon{font-size:18px;color:#707680}
+.target-upload-text{flex:1;font-size:10px;color:#8a9099}
+.target-upload-text strong{color:#fff;display:block}
+
 /* Error page styles */
 .error-page{min-height:100vh;display:grid;place-items:center;padding:24px;background:#08090a;text-align:center}
 .error-box{width:min(500px,100%);background:#111315;border:1px solid #292c30;border-radius:18px;padding:45px 35px;box-shadow:0 24px 80px #0009}

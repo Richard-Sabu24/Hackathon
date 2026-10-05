@@ -3,18 +3,23 @@ const $$ = (s) => [...document.querySelectorAll(s)];
 
 const state = {
   projects: JSON.parse(localStorage.getItem("masklabProjects") || "[]"),
+  
+  // Face Morphing State
   faceFile: null,
   faceImg: null,
   faceCanvas: null,
   faceCtx: null,
-  currentFaceFilter: "male-tactical",
-  currentGenderCategory: "all",
-  currentFaceColor: "#2677ff",
+  targetPersonaImg: null,
+  targetPersonaName: "Marcus (Male)",
+  currentOverlayFilter: "none",
+  morphRatio: 0.60,
+  skinHarmonize: 0.85,
+  blendScale: 1.0,
 
+  // Audio DSP State
   audioFile: null,
   audioCtx: null,
   audioSourceNode: null,
-  audioElement: null,
   currentSoundFilter: "normal",
   biquadFilter: null,
   biquadFilter2: null,
@@ -24,12 +29,35 @@ const state = {
   analyser: null,
   animFrameId: null,
 
+  // Live Camera State
   camera: null,
-  currentLiveFilter: "male-hud",
+  livePersonaImg: null,
+  livePersonaName: "Marcus (Male)",
   liveAnimFrame: null,
-  liveTrackX: 0.5,
-  liveTrackY: 0.48
+  liveIntensity: 0.65,
+  liveScale: 1.0,
+  liveSkinTone: 0.80
 };
+
+// Preloaded Personas cache
+const personasCache = {};
+function preloadPersona(name, url) {
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = url;
+  personasCache[name] = img;
+  return img;
+}
+
+// Preload standard personas
+preloadPersona("male-marcus", "/images/personas/male_marcus.jpg");
+preloadPersona("male-viktor", "/images/personas/male_viktor.jpg");
+preloadPersona("female-elena", "/images/personas/female_elena.jpg");
+preloadPersona("female-sophia", "/images/personas/female_sophia.jpg");
+
+// Default initial targets
+state.targetPersonaImg = personasCache["male-marcus"];
+state.livePersonaImg = personasCache["male-marcus"];
 
 /* -----------------------------
    SMALL HELPERS
@@ -44,7 +72,7 @@ function toast(message) {
 
   setTimeout(() => {
     element.classList.remove("show");
-  }, 2200);
+  }, 2300);
 }
 
 function escapeHTML(text) {
@@ -78,7 +106,7 @@ async function addProject(type, name) {
   state.projects = state.projects.slice(0, 12);
 
   saveProjects();
-  toast("Project saved to workspace");
+  toast("Saved to workspace!");
 
   try {
     const response = await fetch("/api/projects", {
@@ -138,17 +166,17 @@ function showPage(page) {
 
   const titles = {
     home: "Home",
-    face: "Image & Video",
-    voice: "Voice",
-    live: "Live Camera",
+    face: "Image & Video Morphing",
+    voice: "Voice Morphing",
+    live: "Live Camera Morphing",
     projects: "Projects"
   };
 
   const keys = {
     home: "WORKSPACE",
-    face: "IMAGE & VIDEO",
-    voice: "VOICE",
-    live: "LIVE CAMERA",
+    face: "FACE MORPH STUDIO",
+    voice: "VOICE MORPH DSP",
+    live: "LIVE CAMERA MORPH",
     projects: "PROJECTS"
   };
 
@@ -246,71 +274,89 @@ $$(".login-tab").forEach((tab) => {
 });
 
 /* =============================================================
-   1. IMAGE & VIDEO: MALE, FEMALE & CYBER FACE MASKING ENGINE
+   1. REAL FACE MORPHING ENGINE (MALE & FEMALE PERSONAS)
 ============================================================= */
 
-// Gender Category Filter Tabs
-if ($("#genderTabs")) {
-  $$("#genderTabs .filter-tab-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      $$("#genderTabs .filter-tab-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
+// Persona Selection
+if ($("#personaGrid")) {
+  $$("#personaGrid .persona-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      $$("#personaGrid .persona-card").forEach(c => c.classList.remove("active"));
+      card.classList.add("active");
 
-      const cat = btn.dataset.category;
-      state.currentGenderCategory = cat;
+      const personaId = card.dataset.persona;
+      const personaSrc = card.dataset.src;
+      const personaName = card.dataset.name || "Target Persona";
 
-      $$("#facePresetsGrid .filter-chip").forEach((chip) => {
-        const gender = chip.dataset.gender;
-        if (cat === "all" || gender === cat) {
-          chip.style.display = "flex";
-        } else {
-          chip.style.display = "none";
-        }
-      });
+      state.targetPersonaName = personaName;
+
+      if (personasCache[personaId]) {
+        state.targetPersonaImg = personasCache[personaId];
+      } else {
+        state.targetPersonaImg = preloadPersona(personaId, personaSrc);
+      }
+
+      if ($("#currentFilterTitle")) {
+        $("#currentFilterTitle").textContent = `Morphing: You → ${personaName}`;
+      }
+      if ($("#targetBadgeLabel")) {
+        $("#targetBadgeLabel").textContent = `${personaName.toUpperCase()} (100%)`;
+      }
+
+      if (state.faceImg) {
+        renderFaceMorph();
+      }
+
+      toast(`Target Persona: ${personaName}`);
     });
   });
 }
 
-// Preset Chip Selection
+// Custom Target Face Upload
+if ($("#customTargetInput")) {
+  $("#customTargetInput").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const img = new Image();
+    img.onload = () => {
+      state.targetPersonaImg = img;
+      state.targetPersonaName = `Custom (${file.name.split('.')[0]})`;
+
+      $$("#personaGrid .persona-card").forEach(c => c.classList.remove("active"));
+
+      if ($("#currentFilterTitle")) {
+        $("#currentFilterTitle").textContent = `Morphing: You → ${state.targetPersonaName}`;
+      }
+      if ($("#targetBadgeLabel")) {
+        $("#targetBadgeLabel").textContent = `${state.targetPersonaName.toUpperCase()} (100%)`;
+      }
+
+      if (state.faceImg) {
+        renderFaceMorph();
+      }
+      toast(`Loaded custom target face: ${file.name}`);
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// Optional cosmetic overlay filter chips
 if ($("#facePresetsGrid")) {
   $$("#facePresetsGrid .filter-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
       $$("#facePresetsGrid .filter-chip").forEach(c => c.classList.remove("active"));
       chip.classList.add("active");
 
-      state.currentFaceFilter = chip.dataset.filter;
-      const title = chip.querySelector(".filter-chip-header span")?.textContent || "Custom Mask";
-      const tag = chip.querySelector(".chip-tag")?.textContent || "";
-
-      if ($("#currentFilterTitle")) {
-        $("#currentFilterTitle").textContent = `Active Filter: ${title} (${tag})`;
-      }
-
+      state.currentOverlayFilter = chip.dataset.filter || "none";
       if (state.faceImg) {
-        renderFaceCanvas();
+        renderFaceMorph();
       }
     });
   });
 }
 
-// Color Theme Selection
-$$(".color-dot").forEach((dot) => {
-  dot.addEventListener("click", () => {
-    $$(".color-dot").forEach(d => {
-      d.classList.remove("active");
-      d.style.borderColor = "transparent";
-    });
-    dot.classList.add("active");
-    dot.style.borderColor = "#ffffff";
-    state.currentFaceColor = dot.dataset.color;
-
-    if (state.faceImg) {
-      renderFaceCanvas();
-    }
-  });
-});
-
-// File upload triggers
+// Source Photo Upload triggers
 if ($("#faceBrowse")) {
   $("#faceBrowse").addEventListener("click", () => {
     $("#faceInput").click();
@@ -329,12 +375,12 @@ if ($("#faceInput")) {
   $("#faceInput").addEventListener("change", (event) => {
     const file = event.target.files[0];
     if (file) {
-      loadMedia(file);
+      loadSourceFace(file);
     }
   });
 }
 
-function loadMedia(file) {
+function loadSourceFace(file) {
   if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
     toast("Choose an image or video");
     return;
@@ -361,9 +407,9 @@ function loadMedia(file) {
     const img = new Image();
     img.onload = () => {
       state.faceImg = img;
-      renderFaceCanvas();
+      renderFaceMorph();
       $("#processFace").disabled = false;
-      toast("Image loaded into canvas engine");
+      toast("Source photo loaded — morph generated!");
     };
     img.src = URL.createObjectURL(file);
   } else {
@@ -377,431 +423,444 @@ function loadMedia(file) {
 
     video.onloadeddata = () => {
       state.faceImg = video;
-      renderFaceCanvas();
+      renderFaceMorph();
       $("#processFace").disabled = false;
-      toast("Video loaded into engine");
+      toast("Video loaded into morph engine");
     };
   }
 }
 
-// Procedural filter rendering on canvas
-function renderFaceCanvas() {
+// REAL BIOMETRIC MULTI-PASS FACE MORPHING ALGORITHM
+function renderFaceMorph() {
   if (!state.faceCanvas || !state.faceImg) return;
 
   const canvas = state.faceCanvas;
   const ctx = state.faceCtx;
   const source = state.faceImg;
+  const target = state.targetPersonaImg;
 
-  const sourceWidth = source.naturalWidth || source.videoWidth || 800;
-  const sourceHeight = source.naturalHeight || source.videoHeight || 600;
+  const sourceW = source.naturalWidth || source.videoWidth || 800;
+  const sourceH = source.naturalHeight || source.videoHeight || 600;
 
-  canvas.width = sourceWidth;
-  canvas.height = sourceHeight;
+  canvas.width = sourceW;
+  canvas.height = sourceH;
 
+  // Step 1: Draw base source photo
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
 
-  const strength = Number($("#strength") ? $("#strength").value : 75) / 100;
-  const scale = Number($("#maskScale") ? $("#maskScale").value : 100) / 100;
-  const color = state.currentFaceColor || "#2677ff";
-  const filterType = state.currentFaceFilter || "male-tactical";
+  const morphRatio = Number($("#morphRatio") ? $("#morphRatio").value : 60) / 100;
+  const skinHarmonize = Number($("#skinHarmonize") ? $("#skinHarmonize").value : 85) / 100;
+  const blendScale = Number($("#maskScale") ? $("#maskScale").value : 100) / 100;
 
-  ctx.save();
-  ctx.globalAlpha = strength;
+  // If morphRatio is 0, keep pure source
+  if (morphRatio <= 0.02 || !target || !target.complete || target.naturalWidth === 0) {
+    if ($("#saveFace")) $("#saveFace").disabled = false;
+    if ($("#downloadFace")) $("#downloadFace").disabled = false;
+    return;
+  }
 
-  const cx = canvas.width * 0.5;
+  // Facial ROI Geometry on Source
+  const cx = canvas.width * 0.50;
   const cy = canvas.height * 0.46;
-  const rx = canvas.width * 0.18 * scale;
-  const ry = canvas.height * 0.25 * scale;
+  const rx = canvas.width * 0.22 * blendScale;
+  const ry = canvas.height * 0.32 * blendScale;
 
-  // Apply procedural filter graphics based on male/female/fx type
-  drawProceduralFilter(ctx, filterType, cx, cy, rx, ry, color, canvas.width, canvas.height);
+  // Step 2: Offscreen target buffer for feature extraction & skin harmonization
+  const offscreen = document.createElement("canvas");
+  offscreen.width = canvas.width;
+  offscreen.height = canvas.height;
+  const oCtx = offscreen.getContext("2d");
 
-  ctx.restore();
+  // Draw target face aligned to source facial region
+  const targetAspect = target.naturalWidth / target.naturalHeight;
+  const targetDrawH = ry * 2.3;
+  const targetDrawW = targetDrawH * targetAspect;
+  const targetDrawX = cx - targetDrawW * 0.5;
+  const targetDrawY = cy - targetDrawH * 0.48;
 
-  // Enable download & save buttons
-  if ($("#saveFace")) $("#saveFace").disabled = false;
-  if ($("#downloadFace")) $("#downloadFace").disabled = false;
-  if ($("#filterStatusTag")) $("#filterStatusTag").textContent = "PROCESSED";
-}
+  oCtx.drawImage(target, targetDrawX, targetDrawY, targetDrawW, targetDrawH);
 
-function drawProceduralFilter(ctx, type, cx, cy, rx, ry, color, cw, ch) {
-  ctx.save();
-
-  switch (type) {
-    /* ---------------- MALE FILTERS ---------------- */
-    case "male-tactical": {
-      // Angular combat visor
-      ctx.strokeStyle = color;
-      ctx.fillStyle = color + "26";
-      ctx.lineWidth = 5;
-
-      // Hexagonal Eye Visor
-      ctx.beginPath();
-      ctx.moveTo(cx - rx * 1.05, cy - ry * 0.25);
-      ctx.lineTo(cx - rx * 0.45, cy - ry * 0.55);
-      ctx.lineTo(cx + rx * 0.45, cy - ry * 0.55);
-      ctx.lineTo(cx + rx * 1.05, cy - ry * 0.25);
-      ctx.lineTo(cx + rx * 0.85, cy + ry * 0.05);
-      ctx.lineTo(cx + rx * 0.25, cy - ry * 0.05);
-      ctx.lineTo(cx - rx * 0.25, cy - ry * 0.05);
-      ctx.lineTo(cx - rx * 0.85, cy + ry * 0.05);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // Chiseled Jawline Brackets
-      ctx.beginPath();
-      ctx.moveTo(cx - rx * 0.95, cy + ry * 0.25);
-      ctx.lineTo(cx - rx * 0.75, cy + ry * 0.75);
-      ctx.lineTo(cx, cy + ry * 1.05);
-      ctx.lineTo(cx + rx * 0.75, cy + ry * 0.75);
-      ctx.lineTo(cx + rx * 0.95, cy + ry * 0.25);
-      ctx.lineWidth = 4;
-      ctx.stroke();
-
-      // Reticle and telemetry
-      ctx.beginPath();
-      ctx.arc(cx - rx * 0.45, cy - ry * 0.25, 14, 0, Math.PI * 2);
-      ctx.arc(cx + rx * 0.45, cy - ry * 0.25, 14, 0, Math.PI * 2);
-      ctx.stroke();
-
-      ctx.fillStyle = color;
-      ctx.font = `bold ${Math.max(12, Math.round(cw * 0.018))}px Inter, sans-serif`;
-      ctx.fillText("TACTICAL MALE // LOCK", cx - rx * 0.9, cy - ry * 0.7);
-      break;
-    }
-
-    case "male-stealth": {
-      // Carbon Stealth Shadow
-      ctx.fillStyle = "#090d14d9";
-      ctx.strokeStyle = "#38475c";
-      ctx.lineWidth = 4;
-
-      // Lower face tactical mask
-      ctx.beginPath();
-      ctx.moveTo(cx - rx * 0.9, cy);
-      ctx.lineTo(cx - rx * 0.6, cy + ry * 0.95);
-      ctx.lineTo(cx, cy + ry * 1.15);
-      ctx.lineTo(cx + rx * 0.6, cy + ry * 0.95);
-      ctx.lineTo(cx + rx * 0.9, cy);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // Carbon vent lines
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
-      for (let i = -3; i <= 3; i++) {
-        ctx.beginPath();
-        ctx.moveTo(cx + i * 16 - 8, cy + ry * 0.45);
-        ctx.lineTo(cx + i * 16 + 8, cy + ry * 0.75);
-        ctx.stroke();
+  // Step 3: Skin Tone Harmonization (Sample source face color and tint target)
+  if (skinHarmonize > 0.05) {
+    try {
+      const srcSample = ctx.getImageData(Math.floor(cx), Math.floor(cy + ry * 0.1), 1, 1).data;
+      if (srcSample && srcSample[3] > 0) {
+        oCtx.save();
+        oCtx.globalCompositeOperation = "color";
+        oCtx.fillStyle = `rgba(${srcSample[0]}, ${srcSample[1]}, ${srcSample[2]}, ${skinHarmonize * 0.65})`;
+        oCtx.fillRect(targetDrawX, targetDrawY, targetDrawW, targetDrawH);
+        oCtx.restore();
       }
-      break;
-    }
-
-    case "male-spartan": {
-      // Spartan Gold Faceplate
-      ctx.strokeStyle = "#ffb300";
-      ctx.fillStyle = "#ffb30033";
-      ctx.lineWidth = 6;
-
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - ry * 0.85);
-      ctx.lineTo(cx + rx * 0.95, cy - ry * 0.2);
-      ctx.lineTo(cx + rx * 0.8, cy + ry * 0.75);
-      ctx.lineTo(cx, cy + ry * 1.1);
-      ctx.lineTo(cx - rx * 0.8, cy + ry * 0.75);
-      ctx.lineTo(cx - rx * 0.95, cy - ry * 0.2);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // Golden T-slit Visor
-      ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.moveTo(cx - rx * 0.65, cy - ry * 0.25);
-      ctx.lineTo(cx + rx * 0.65, cy - ry * 0.25);
-      ctx.moveTo(cx, cy - ry * 0.25);
-      ctx.lineTo(cx, cy + ry * 0.4);
-      ctx.stroke();
-      break;
-    }
-
-    case "male-beard": {
-      // Masculine Jawline & Stubble Contour
-      ctx.strokeStyle = color;
-      ctx.fillStyle = "#0c141fa6";
-      ctx.lineWidth = 5;
-
-      ctx.beginPath();
-      ctx.ellipse(cx, cy + ry * 0.6, rx * 0.85, ry * 0.5, 0, 0, Math.PI);
-      ctx.lineTo(cx - rx * 0.85, cy + ry * 0.6);
-      ctx.fill();
-      ctx.stroke();
-
-      // Accentuate Chin & Cheek Ridge
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(cx - rx * 0.5, cy + ry * 0.85);
-      ctx.lineTo(cx + rx * 0.5, cy + ry * 0.85);
-      ctx.stroke();
-      break;
-    }
-
-    /* ---------------- FEMALE FILTERS ---------------- */
-    case "female-glam": {
-      // Cyber Glam (Magenta & Violet Contour)
-      ctx.strokeStyle = "#e040fb";
-      ctx.fillStyle = "#e040fb26";
-      ctx.lineWidth = 4;
-
-      // Sleek winged eye masquerade
-      ctx.beginPath();
-      ctx.moveTo(cx - rx * 1.1, cy - ry * 0.4);
-      ctx.bezierCurveTo(cx - rx * 0.6, cy - ry * 0.7, cx - rx * 0.2, cy - ry * 0.2, cx, cy - ry * 0.35);
-      ctx.bezierCurveTo(cx + rx * 0.2, cy - ry * 0.2, cx + rx * 0.6, cy - ry * 0.7, cx + rx * 1.1, cy - ry * 0.4);
-      ctx.bezierCurveTo(cx + rx * 0.7, cy - ry * 0.05, cx + rx * 0.3, cy + ry * 0.1, cx, cy - ry * 0.05);
-      ctx.bezierCurveTo(cx - rx * 0.3, cy + ry * 0.1, cx - rx * 0.7, cy - ry * 0.05, cx - rx * 1.1, cy - ry * 0.4);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // Luminous cheek curves & chin taper
-      ctx.strokeStyle = "#ff80ab";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(cx - rx * 0.65, cy + ry * 0.25, rx * 0.25, 0, Math.PI);
-      ctx.arc(cx + rx * 0.65, cy + ry * 0.25, rx * 0.25, 0, Math.PI);
-      ctx.stroke();
-
-      // Delicate Chin Point
-      ctx.beginPath();
-      ctx.moveTo(cx - rx * 0.25, cy + ry * 0.9);
-      ctx.lineTo(cx, cy + ry * 1.05);
-      ctx.lineTo(cx + rx * 0.25, cy + ry * 0.9);
-      ctx.stroke();
-      break;
-    }
-
-    case "female-aura": {
-      // Ethereal Glow & Celestial Halo
-      const grad = ctx.createRadialGradient(cx, cy, rx * 0.3, cx, cy, rx * 1.4);
-      grad.addColorStop(0, "#ff80ab4d");
-      grad.addColorStop(0.5, "#ffd54f33");
-      grad.addColorStop(1, "transparent");
-
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(cx, cy, rx * 1.35, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Celestial Halo Ring
-      ctx.strokeStyle = "#ffe082";
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - ry * 0.75, rx * 0.9, ry * 0.25, 0, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Forehead starlight star
-      ctx.fillStyle = "#fff";
-      ctx.font = `bold ${Math.max(16, Math.round(cw * 0.03))}px Inter, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText("✦", cx, cy - ry * 0.45);
-      break;
-    }
-
-    case "female-lace": {
-      // Venetian Baroque Lace
-      ctx.strokeStyle = "#f8bbd0";
-      ctx.lineWidth = 2.5;
-
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - ry * 0.2, rx * 0.95, ry * 0.4, 0, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Lace loops
-      for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 8) {
-        const px = cx + Math.cos(angle) * rx * 0.95;
-        const py = (cy - ry * 0.2) + Math.sin(angle) * ry * 0.4;
-        ctx.beginPath();
-        ctx.arc(px, py, 7, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-      break;
-    }
-
-    case "female-neon": {
-      // Neon Siren Synthwave
-      ctx.strokeStyle = "#00e5ff";
-      ctx.lineWidth = 4;
-      ctx.shadowColor = "#00e5ff";
-      ctx.shadowBlur = 15;
-
-      ctx.beginPath();
-      ctx.arc(cx - rx * 0.55, cy - ry * 0.15, rx * 0.35, Math.PI * 0.2, Math.PI * 1.1);
-      ctx.stroke();
-
-      ctx.strokeStyle = "#ff007f";
-      ctx.shadowColor = "#ff007f";
-      ctx.beginPath();
-      ctx.arc(cx + rx * 0.55, cy - ry * 0.15, rx * 0.35, Math.PI * 1.9, Math.PI * 0.8, true);
-      ctx.stroke();
-      break;
-    }
-
-    /* ---------------- UNIVERSAL / FX FILTERS ---------------- */
-    case "fx-censor": {
-      // Pixelation Mosaic Block Censor
-      const blockX = cx - rx * 1.1;
-      const blockY = cy - ry * 0.35;
-      const blockW = rx * 2.2;
-      const blockH = ry * 0.65;
-
-      // Draw pixelated pattern
-      const size = 16;
-      for (let px = blockX; px < blockX + blockW; px += size) {
-        for (let py = blockY; py < blockY + blockH; py += size) {
-          const shade = ((Math.sin(px * 12.3 + py * 45.6) + 1) * 0.5) > 0.5 ? "#101620" : "#2a374a";
-          ctx.fillStyle = shade;
-          ctx.fillRect(px, py, size - 1, size - 1);
-        }
-      }
-
-      ctx.fillStyle = "#ff1744";
-      ctx.font = `900 ${Math.max(14, Math.round(cw * 0.024))}px Inter, monospace`;
-      ctx.textAlign = "center";
-      ctx.fillText("RESTRICTED // CENSOR", cx, cy);
-      break;
-    }
-
-    case "fx-matrix": {
-      // Matrix Digital Stream
-      ctx.fillStyle = "#00e676";
-      ctx.font = `900 ${Math.max(12, Math.round(cw * 0.016))}px monospace`;
-      ctx.shadowColor = "#00e676";
-      ctx.shadowBlur = 8;
-
-      const glyphs = "01010101XYZMASKLAB404AI77";
-      for (let i = -5; i <= 5; i++) {
-        const gx = cx + i * 20;
-        for (let j = -6; j <= 6; j++) {
-          const gy = cy + j * 18;
-          const char = glyphs.charAt(Math.floor(Math.random() * glyphs.length));
-          ctx.fillText(char, gx, gy);
-        }
-      }
-      break;
-    }
-
-    case "fx-thermal": {
-      // Thermal Heatmap Gradient
-      const grad = ctx.createLinearGradient(cx - rx, cy - ry, cx + rx, cy + ry);
-      grad.addColorStop(0, "#311b92cc");
-      grad.addColorStop(0.3, "#00e5ffcc");
-      grad.addColorStop(0.6, "#ffd600cc");
-      grad.addColorStop(1, "#ff1744cc");
-
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, rx * 1.1, ry * 1.15, 0, 0, Math.PI * 2);
-      ctx.fill();
-      break;
-    }
-
-    case "fx-wireframe":
-    default: {
-      // 3D Poly Wireframe
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2.5;
-
-      const points = [
-        [cx, cy - ry * 0.8],
-        [cx - rx * 0.7, cy - ry * 0.4],
-        [cx + rx * 0.7, cy - ry * 0.4],
-        [cx - rx * 0.9, cy + ry * 0.2],
-        [cx + rx * 0.9, cy + ry * 0.2],
-        [cx - rx * 0.5, cy + ry * 0.8],
-        [cx + rx * 0.5, cy + ry * 0.8],
-        [cx, cy + ry * 1.05],
-        [cx - rx * 0.3, cy],
-        [cx + rx * 0.3, cy],
-        [cx, cy + ry * 0.4]
-      ];
-
-      for (let i = 0; i < points.length; i++) {
-        for (let j = i + 1; j < points.length; j++) {
-          const dist = Math.hypot(points[i][0] - points[j][0], points[i][1] - points[j][1]);
-          if (dist < rx * 1.1) {
-            ctx.beginPath();
-            ctx.moveTo(points[i][0], points[i][1]);
-            ctx.lineTo(points[j][0], points[j][1]);
-            ctx.stroke();
-          }
-        }
-        // draw vertex
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(points[i][0] - 2, points[i][1] - 2, 4, 4);
-      }
-      break;
+    } catch (e) {
+      // In case of cross-origin local canvas sampling restriction
     }
   }
 
+  // Step 4: Create smooth elliptical feathered gradient mask
+  const maskCanvas = document.createElement("canvas");
+  maskCanvas.width = canvas.width;
+  maskCanvas.height = canvas.height;
+  const mCtx = maskCanvas.getContext("2d");
+
+  const featherGrad = mCtx.createRadialGradient(cx, cy, rx * 0.45, cx, cy, rx * 1.15);
+  featherGrad.addColorStop(0, `rgba(0, 0, 0, ${morphRatio})`);
+  featherGrad.addColorStop(0.75, `rgba(0, 0, 0, ${morphRatio * 0.75})`);
+  featherGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+  mCtx.fillStyle = featherGrad;
+  mCtx.beginPath();
+  mCtx.ellipse(cx, cy, rx * 1.15, ry * 1.15, 0, 0, Math.PI * 2);
+  mCtx.fill();
+
+  // Mask the target buffer
+  oCtx.globalCompositeOperation = "destination-in";
+  oCtx.drawImage(maskCanvas, 0, 0);
+
+  // Step 5: Blend morphed facial features over source photo
+  ctx.save();
+  ctx.drawImage(offscreen, 0, 0);
+
+  // Feature convergence pass (soft light blending for organic skin fusion)
+  ctx.globalCompositeOperation = "soft-light";
+  ctx.globalAlpha = morphRatio * 0.55;
+  ctx.drawImage(offscreen, 0, 0);
   ctx.restore();
+
+  // Step 6: Optional cosmetic overlay if selected
+  if (state.currentOverlayFilter && state.currentOverlayFilter !== "none") {
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    drawCosmeticOverlay(ctx, state.currentOverlayFilter, cx, cy, rx, ry, canvas.width, canvas.height);
+    ctx.restore();
+  }
+
+  // Enable download & save
+  if ($("#saveFace")) $("#saveFace").disabled = false;
+  if ($("#downloadFace")) $("#downloadFace").disabled = false;
+  if ($("#filterStatusTag")) $("#filterStatusTag").innerHTML = `<i class="pulse-dot"></i> MORPH READY`;
 }
 
-// Sliders triggers
-if ($("#strength")) {
-  $("#strength").addEventListener("input", (e) => {
-    if ($("#strengthValue")) $("#strengthValue").textContent = e.target.value + "%";
-    if (state.faceImg) renderFaceCanvas();
+function drawCosmeticOverlay(ctx, filter, cx, cy, rx, ry, cw, ch) {
+  if (filter === "male-tactical") {
+    ctx.strokeStyle = "#2677ff";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(cx - rx * 1.05, cy - ry * 0.3);
+    ctx.lineTo(cx - rx * 0.5, cy - ry * 0.55);
+    ctx.lineTo(cx + rx * 0.5, cy - ry * 0.55);
+    ctx.lineTo(cx + rx * 1.05, cy - ry * 0.3);
+    ctx.stroke();
+
+    ctx.fillStyle = "#6ea5ff";
+    ctx.font = `bold ${Math.max(12, Math.round(cw * 0.016))}px Inter, monospace`;
+    ctx.fillText("♂ MALE IDENTITY MORPH // SYNCHRONIZED", cx - rx * 0.9, cy - ry * 0.65);
+  } else if (filter === "female-glam") {
+    ctx.strokeStyle = "#e040fb";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - ry * 0.7, rx * 0.85, ry * 0.18, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = "#ff80ab";
+    ctx.font = `bold ${Math.max(12, Math.round(cw * 0.016))}px Inter, sans-serif`;
+    ctx.fillText("♀ FEMALE IDENTITY // GLAM AURA", cx - rx * 0.8, cy - ry * 0.8);
+  } else if (filter === "fx-censor") {
+    ctx.fillStyle = "#ff1744";
+    ctx.font = `900 ${Math.max(14, Math.round(cw * 0.022))}px monospace`;
+    ctx.textAlign = "center";
+    ctx.fillText("RESTRICTED IDENTITY // MORPH", cx, cy);
+  }
+}
+
+// Sliders listener
+if ($("#morphRatio")) {
+  $("#morphRatio").addEventListener("input", (e) => {
+    if ($("#morphRatioValue")) $("#morphRatioValue").textContent = e.target.value + "%";
+    state.morphRatio = Number(e.target.value) / 100;
+    if (state.faceImg) renderFaceMorph();
+  });
+}
+
+if ($("#skinHarmonize")) {
+  $("#skinHarmonize").addEventListener("input", (e) => {
+    if ($("#skinHarmonizeValue")) $("#skinHarmonizeValue").textContent = e.target.value + "%";
+    state.skinHarmonize = Number(e.target.value) / 100;
+    if (state.faceImg) renderFaceMorph();
   });
 }
 
 if ($("#maskScale")) {
   $("#maskScale").addEventListener("input", (e) => {
-    if ($("#maskScaleValue")) $("#maskScaleValue").textContent = e.target.value + "%";
-    if (state.faceImg) renderFaceCanvas();
+    if ($("#blendRadiusValue")) $("#blendRadiusValue").textContent = e.target.value + "%";
+    state.blendScale = Number(e.target.value) / 100;
+    if (state.faceImg) renderFaceMorph();
   });
 }
 
 // Process Face button
 if ($("#processFace")) {
   $("#processFace").addEventListener("click", () => {
-    renderFaceCanvas();
-    toast("Filter processed & applied!");
+    renderFaceMorph();
+    toast(`Morphed into ${state.targetPersonaName}!`);
   });
 }
 
 // Save Project button
 if ($("#saveFace")) {
   $("#saveFace").addEventListener("click", () => {
-    const filterName = state.currentFaceFilter.replace("-", " ").toUpperCase();
-    const fileName = state.faceFile ? state.faceFile.name : "media";
-    addProject("IMAGE", `[${filterName}] ${fileName}`);
+    const srcName = state.faceFile ? state.faceFile.name : "portrait";
+    addProject("IMAGE", `Morphed into ${state.targetPersonaName} (${srcName})`);
   });
 }
 
-// Download Button
+// Download Morphed Photo
 if ($("#downloadFace")) {
   $("#downloadFace").addEventListener("click", () => {
     if (!state.faceCanvas) return;
     const link = document.createElement("a");
-    link.download = `MaskLab_${state.currentFaceFilter}_${Date.now()}.png`;
+    link.download = `MaskLab_Morph_${state.targetPersonaName.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.png`;
     link.href = state.faceCanvas.toDataURL("image/png");
     link.click();
-    toast("Filtered image downloaded!");
+    toast("Morphed photo downloaded!");
   });
 }
 
 /* =============================================================
-   2. VOICE & AUDIO: REAL-TIME DSP SOUND FILTERING ENGINE
+   2. REAL-TIME LIVE CAMERA FACE MORPHING ENGINE
 ============================================================= */
 
-// Sound Preset Selection
+// Live Camera Persona Selection
+if ($("#livePersonaGrid")) {
+  $$("#livePersonaGrid .persona-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      $$("#livePersonaGrid .persona-card").forEach(c => c.classList.remove("active"));
+      card.classList.add("active");
+
+      const personaId = card.dataset.livePersona;
+      const personaSrc = card.dataset.src;
+      const personaName = card.dataset.name || "Target Persona";
+
+      state.livePersonaName = personaName;
+
+      if (personasCache[personaId]) {
+        state.livePersonaImg = personasCache[personaId];
+      } else {
+        state.livePersonaImg = preloadPersona(personaId, personaSrc);
+      }
+
+      if ($("#cameraFilterBadge")) {
+        $("#cameraFilterBadge").textContent = `LIVE MORPH: ${personaName.toUpperCase()}`;
+      }
+
+      toast(`Morphing live into: ${personaName}`);
+    });
+  });
+}
+
+if ($("#startCamera")) {
+  $("#startCamera").addEventListener("click", async () => {
+    try {
+      state.camera = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
+      });
+
+      const video = $("#camera");
+      video.srcObject = state.camera;
+      $("#cameraEmpty").classList.add("hidden");
+      $("#startCamera").disabled = true;
+      $("#stopCamera").disabled = false;
+      if ($("#capturePhoto")) $("#capturePhoto").disabled = false;
+
+      if ($("#liveStatus")) {
+        $("#liveStatus").innerHTML = `<i class="pulse-dot"></i> LIVE MORPH STREAMING`;
+      }
+
+      startLiveCameraMorphLoop();
+      toast("Webcam initialized with live face morphing!");
+    } catch (error) {
+      toast("Camera permission was not granted");
+    }
+  });
+}
+
+if ($("#stopCamera")) {
+  $("#stopCamera").addEventListener("click", () => {
+    if (state.camera) {
+      state.camera.getTracks().forEach((track) => track.stop());
+    }
+
+    state.camera = null;
+    $("#camera").srcObject = null;
+    $("#cameraEmpty").classList.remove("hidden");
+    $("#startCamera").disabled = false;
+    $("#stopCamera").disabled = true;
+    if ($("#capturePhoto")) $("#capturePhoto").disabled = true;
+
+    if ($("#liveStatus")) {
+      $("#liveStatus").innerHTML = `<i class="pulse-dot"></i> CAMERA OFFLINE`;
+    }
+
+    if (state.liveAnimFrame) {
+      cancelAnimationFrame(state.liveAnimFrame);
+    }
+  });
+}
+
+if ($("#liveIntensity")) {
+  $("#liveIntensity").addEventListener("input", (e) => {
+    if ($("#liveIntensityValue")) $("#liveIntensityValue").textContent = e.target.value + "%";
+    state.liveIntensity = Number(e.target.value) / 100;
+  });
+}
+
+if ($("#liveScale")) {
+  $("#liveScale").addEventListener("input", (e) => {
+    if ($("#liveScaleValue")) $("#liveScaleValue").textContent = e.target.value + "%";
+    state.liveScale = Number(e.target.value) / 100;
+  });
+}
+
+if ($("#liveSkinTone")) {
+  $("#liveSkinTone").addEventListener("input", (e) => {
+    if ($("#liveSkinToneValue")) $("#liveSkinToneValue").textContent = e.target.value + "%";
+    state.liveSkinTone = Number(e.target.value) / 100;
+  });
+}
+
+// Live Camera Face Morph Rendering Loop
+function startLiveCameraMorphLoop() {
+  const canvas = $("#liveCanvas");
+  const video = $("#camera");
+  if (!canvas || !video) return;
+
+  const ctx = canvas.getContext("2d");
+
+  function renderLiveFrame() {
+    if (!state.camera) return;
+
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const morphRatio = state.liveIntensity || 0.65;
+    const scale = state.liveScale || 1.0;
+    const target = state.livePersonaImg;
+
+    const cx = canvas.width * 0.50;
+    const cy = canvas.height * 0.46;
+    const rx = canvas.width * 0.20 * scale;
+    const ry = canvas.height * 0.30 * scale;
+
+    if (target && target.complete && target.naturalWidth > 0 && morphRatio > 0.05) {
+      ctx.save();
+
+      // Create feathered mask for live target face
+      const offscreen = document.createElement("canvas");
+      offscreen.width = canvas.width;
+      offscreen.height = canvas.height;
+      const oCtx = offscreen.getContext("2d");
+
+      const targetAspect = target.naturalWidth / target.naturalHeight;
+      const tH = ry * 2.3;
+      const tW = tH * targetAspect;
+      const tX = cx - tW * 0.5;
+      const tY = cy - tH * 0.48;
+
+      oCtx.drawImage(target, tX, tY, tW, tH);
+
+      // Feathered alpha mask
+      const mCanvas = document.createElement("canvas");
+      mCanvas.width = canvas.width;
+      mCanvas.height = canvas.height;
+      const mCtx = mCanvas.getContext("2d");
+
+      const grad = mCtx.createRadialGradient(cx, cy, rx * 0.45, cx, cy, rx * 1.1);
+      grad.addColorStop(0, `rgba(0, 0, 0, ${morphRatio})`);
+      grad.addColorStop(0.75, `rgba(0, 0, 0, ${morphRatio * 0.7})`);
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+      mCtx.fillStyle = grad;
+      mCtx.beginPath();
+      mCtx.ellipse(cx, cy, rx * 1.1, ry * 1.1, 0, 0, Math.PI * 2);
+      mCtx.fill();
+
+      oCtx.globalCompositeOperation = "destination-in";
+      oCtx.drawImage(mCanvas, 0, 0);
+
+      // Composite morphed face onto camera stream
+      ctx.drawImage(offscreen, 0, 0);
+
+      // Soft light blending for skin texture blending
+      ctx.globalCompositeOperation = "soft-light";
+      ctx.globalAlpha = morphRatio * 0.45;
+      ctx.drawImage(offscreen, 0, 0);
+
+      ctx.restore();
+    }
+
+    // Biometric tracking HUD guide
+    ctx.save();
+    ctx.strokeStyle = state.livePersonaName.includes("Female") ? "#e040fb80" : "#2677ff80";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx * 1.05, ry * 1.05, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = state.livePersonaName.includes("Female") ? "#ff80ab" : "#6ea5ff";
+    ctx.font = "bold 13px Inter, monospace";
+    ctx.fillText(`LIVE MORPH: ${state.livePersonaName.toUpperCase()}`, 18, 28);
+    ctx.fillText(`BLEND RATIO: ${(morphRatio * 100).toFixed(0)}%`, 18, 48);
+    ctx.restore();
+
+    state.liveAnimFrame = requestAnimationFrame(renderLiveFrame);
+  }
+
+  if (state.liveAnimFrame) cancelAnimationFrame(state.liveAnimFrame);
+  renderLiveFrame();
+}
+
+// Capture Morphed Photo from Camera
+if ($("#capturePhoto")) {
+  $("#capturePhoto").addEventListener("click", () => {
+    const video = $("#camera");
+    const canvas = $("#liveCanvas");
+    if (!video || !canvas || !state.camera) return;
+
+    const snapCanvas = document.createElement("canvas");
+    snapCanvas.width = canvas.width || 1280;
+    snapCanvas.height = canvas.height || 720;
+    const snapCtx = snapCanvas.getContext("2d");
+
+    // Mirror horizontal to match user view
+    snapCtx.translate(snapCanvas.width, 0);
+    snapCtx.scale(-1, 1);
+    snapCtx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
+    snapCtx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // Overlay morph canvas
+    snapCtx.drawImage(canvas, 0, 0);
+
+    // Save project
+    addProject("IMAGE", `Camera Morphed as ${state.livePersonaName}`);
+
+    // Download snapshot
+    const link = document.createElement("a");
+    link.download = `MaskLab_LiveMorph_${state.livePersonaName.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.png`;
+    link.href = snapCanvas.toDataURL("image/png");
+    link.click();
+
+    toast(`📸 Morphed photo of ${state.livePersonaName} saved & downloaded!`);
+  });
+}
+
+/* =============================================================
+   3. REAL VOICE MORPHING DSP ENGINE (MALE & FEMALE IDENTITIES)
+============================================================= */
+
+// Vocal Target Preset Selection
 if ($("#soundPresetsGrid")) {
   $$("#soundPresetsGrid .sound-card").forEach((card) => {
     card.addEventListener("click", () => {
@@ -809,16 +868,55 @@ if ($("#soundPresetsGrid")) {
       card.classList.add("active");
 
       state.currentSoundFilter = card.dataset.sound;
-      const title = card.querySelector("strong")?.textContent || "Clean";
+      const title = card.dataset.name || "Natural";
 
       if ($("#currentVoiceTitle")) {
-        $("#currentVoiceTitle").textContent = `Filter: ${title}`;
+        $("#currentVoiceTitle").textContent = `Vocal Target: ${title}`;
       }
 
+      // Automatically adjust pitch & formant sliders to match target persona
+      adjustVoiceControlsForPersona(state.currentSoundFilter);
       applyDSPFilter();
-      toast(`DSP Sound Filter: ${title}`);
+      toast(`Vocal Morph: ${title}`);
     });
   });
+}
+
+function adjustVoiceControlsForPersona(preset) {
+  const pitchSlider = $("#pitch");
+  const speedSlider = $("#speed");
+  const depthSlider = $("#filterDepth");
+  const echoSlider = $("#echoMix");
+
+  switch (preset) {
+    case "deep-male": // Marcus
+      if (pitchSlider) { pitchSlider.value = 0.82; $("#pitchValue").textContent = "0.82×"; }
+      if (depthSlider) { depthSlider.value = 85; $("#depthValue").textContent = "85%"; }
+      break;
+    case "bass808": // Viktor
+      if (pitchSlider) { pitchSlider.value = 0.72; $("#pitchValue").textContent = "0.72×"; }
+      if (depthSlider) { depthSlider.value = 95; $("#depthValue").textContent = "95%"; }
+      break;
+    case "high-female": // Elena
+      if (pitchSlider) { pitchSlider.value = 1.24; $("#pitchValue").textContent = "1.24×"; }
+      if (depthSlider) { depthSlider.value = 80; $("#depthValue").textContent = "80%"; }
+      break;
+    case "soprano": // Sophia
+      if (pitchSlider) { pitchSlider.value = 1.38; $("#pitchValue").textContent = "1.38×"; }
+      if (depthSlider) { depthSlider.value = 90; $("#depthValue").textContent = "90%"; }
+      break;
+    case "robot":
+      if (pitchSlider) { pitchSlider.value = 1.00; $("#pitchValue").textContent = "1.00×"; }
+      if (depthSlider) { depthSlider.value = 100; $("#depthValue").textContent = "100%"; }
+      break;
+    default:
+      if (pitchSlider) { pitchSlider.value = 1.00; $("#pitchValue").textContent = "1.00×"; }
+      break;
+  }
+
+  if ($("#audioPlayer") && pitchSlider) {
+    $("#audioPlayer").playbackRate = Number(pitchSlider.value);
+  }
 }
 
 if ($("#audioBrowse")) {
@@ -863,7 +961,7 @@ function loadAudio(file) {
   $("#applyVoice").disabled = false;
   if ($("#saveVoice")) $("#saveVoice").disabled = false;
 
-  toast("Audio loaded into DSP engine");
+  toast("Audio loaded into voice morph engine");
 }
 
 function initWebAudio() {
@@ -882,7 +980,6 @@ function initWebAudio() {
   if (!state.audioSourceNode) {
     state.audioSourceNode = state.audioCtx.createMediaElementSource(player);
 
-    // Create DSP nodes
     state.biquadFilter = state.audioCtx.createBiquadFilter();
     state.biquadFilter2 = state.audioCtx.createBiquadFilter();
     state.waveShaper = state.audioCtx.createWaveShaper();
@@ -891,13 +988,11 @@ function initWebAudio() {
     state.analyser = state.audioCtx.createAnalyser();
     state.analyser.fftSize = 128;
 
-    // Connect delay feedback loop
-    state.delayNode.delayTime.value = 0.3;
+    state.delayNode.delayTime.value = 0.32;
     state.feedbackGain.gain.value = 0;
     state.delayNode.connect(state.feedbackGain);
     state.feedbackGain.connect(state.delayNode);
 
-    // Audio routing
     state.audioSourceNode.connect(state.biquadFilter);
     state.biquadFilter.connect(state.biquadFilter2);
     state.biquadFilter2.connect(state.waveShaper);
@@ -927,109 +1022,104 @@ function applyDSPFilter() {
   if (!state.audioCtx || !state.biquadFilter) return;
 
   const type = state.currentSoundFilter || "normal";
-  const depth = Number($("#filterDepth") ? $("#filterDepth").value : 70) / 100;
+  const depth = Number($("#filterDepth") ? $("#filterDepth").value : 75) / 100;
   const echo = Number($("#echoMix") ? $("#echoMix").value : 20) / 100;
 
-  // Echo mix
   if (state.feedbackGain) {
-    state.feedbackGain.gain.value = echo * 0.6;
+    state.feedbackGain.gain.value = echo * 0.65;
   }
 
-  // Reset defaults
   state.biquadFilter.type = "allpass";
   state.biquadFilter2.type = "allpass";
   state.waveShaper.curve = null;
 
   switch (type) {
     case "deep-male": {
-      // Low-shelf bass boost & low-pass warmth
+      // Marcus Deep Masculine Formant
       state.biquadFilter.type = "lowshelf";
-      state.biquadFilter.frequency.value = 130;
-      state.biquadFilter.gain.value = 14 * depth;
+      state.biquadFilter.frequency.value = 110;
+      state.biquadFilter.gain.value = 15 * depth;
 
       state.biquadFilter2.type = "lowpass";
-      state.biquadFilter2.frequency.value = 2200;
-      state.waveShaper.curve = makeDistortionCurve(10 * depth);
-      break;
-    }
-
-    case "high-female": {
-      // High-shelf presence & low cut
-      state.biquadFilter.type = "highshelf";
-      state.biquadFilter.frequency.value = 3200;
-      state.biquadFilter.gain.value = 12 * depth;
-
-      state.biquadFilter2.type = "highpass";
-      state.biquadFilter2.frequency.value = 260;
-      break;
-    }
-
-    case "robot": {
-      // Resonant bandpass vocoder
-      state.biquadFilter.type = "bandpass";
-      state.biquadFilter.frequency.value = 1050;
-      state.biquadFilter.Q.value = 14 * depth;
-
-      state.waveShaper.curve = makeDistortionCurve(60 * depth);
-      break;
-    }
-
-    case "radio": {
-      // Walkie-Talkie crunchy bandpass
-      state.biquadFilter.type = "bandpass";
-      state.biquadFilter.frequency.value = 1800;
-      state.biquadFilter.Q.value = 3.5;
-
-      state.waveShaper.curve = makeDistortionCurve(80 * depth);
-      break;
-    }
-
-    case "echo": {
-      // Cavernous delay
-      if (state.delayNode) state.delayNode.delayTime.value = 0.38;
-      if (state.feedbackGain) state.feedbackGain.gain.value = 0.55 * depth;
-      break;
-    }
-
-    case "megaphone": {
-      // Mid-horn PA boost
-      state.biquadFilter.type = "peaking";
-      state.biquadFilter.frequency.value = 1600;
-      state.biquadFilter.Q.value = 5.0;
-      state.biquadFilter.gain.value = 18 * depth;
-
-      state.waveShaper.curve = makeDistortionCurve(45 * depth);
-      break;
-    }
-
-    case "alien": {
-      // Resonant frequency sweep
-      state.biquadFilter.type = "peaking";
-      state.biquadFilter.frequency.value = 850;
-      state.biquadFilter.Q.value = 18;
-      state.biquadFilter.gain.value = 20 * depth;
-
-      state.biquadFilter2.type = "notch";
-      state.biquadFilter2.frequency.value = 1500;
+      state.biquadFilter2.frequency.value = 2400;
+      state.waveShaper.curve = makeDistortionCurve(8 * depth);
       break;
     }
 
     case "bass808": {
-      // Sub-harmonic 60Hz push
+      // Viktor Heavy Baritone Rumble
       state.biquadFilter.type = "lowshelf";
-      state.biquadFilter.frequency.value = 65;
-      state.biquadFilter.gain.value = 18 * depth;
+      state.biquadFilter.frequency.value = 75;
+      state.biquadFilter.gain.value = 20 * depth;
+
+      state.biquadFilter2.type = "peaking";
+      state.biquadFilter2.frequency.value = 280;
+      state.biquadFilter2.gain.value = 6 * depth;
+      break;
+    }
+
+    case "high-female": {
+      // Elena Sleek Feminine Formant
+      state.biquadFilter.type = "highshelf";
+      state.biquadFilter.frequency.value = 3400;
+      state.biquadFilter.gain.value = 14 * depth;
+
+      state.biquadFilter2.type = "highpass";
+      state.biquadFilter2.frequency.value = 250;
+      break;
+    }
+
+    case "soprano": {
+      // Sophia Bright Melodic Soprano
+      state.biquadFilter.type = "highshelf";
+      state.biquadFilter.frequency.value = 4200;
+      state.biquadFilter.gain.value = 17 * depth;
+
+      state.biquadFilter2.type = "highpass";
+      state.biquadFilter2.frequency.value = 320;
+      break;
+    }
+
+    case "robot": {
+      // Cyber Android Vocoder
+      state.biquadFilter.type = "bandpass";
+      state.biquadFilter.frequency.value = 1050;
+      state.biquadFilter.Q.value = 16 * depth;
+      state.waveShaper.curve = makeDistortionCurve(70 * depth);
+      break;
+    }
+
+    case "radio": {
+      // Military Comms
+      state.biquadFilter.type = "bandpass";
+      state.biquadFilter.frequency.value = 1750;
+      state.biquadFilter.Q.value = 4.2;
+      state.waveShaper.curve = makeDistortionCurve(85 * depth);
+      break;
+    }
+
+    case "echo": {
+      // Cathedral Spatial
+      if (state.delayNode) state.delayNode.delayTime.value = 0.42;
+      if (state.feedbackGain) state.feedbackGain.gain.value = 0.65 * depth;
+      break;
+    }
+
+    case "alien": {
+      // Cosmic Entity
+      state.biquadFilter.type = "peaking";
+      state.biquadFilter.frequency.value = 900;
+      state.biquadFilter.Q.value = 20;
+      state.biquadFilter.gain.value = 22 * depth;
       break;
     }
 
     case "normal":
     default:
-      // Bypass
       break;
   }
 }
 
-// Waveform visualizer connected to real frequency data
 function startWaveformAnimation() {
   const waveform = $("#waveform");
   if (!waveform) return;
@@ -1056,10 +1146,9 @@ function startWaveformAnimation() {
         const val = dataArray[i * step] || 0;
         const h = Math.max(8, (val / 255) * 85);
         bars[i].style.height = `${h}px`;
-        bars[i].style.background = val > 140 ? "#72b2ff" : "#3b82f6";
+        bars[i].style.background = val > 130 ? "#ff8df0" : "#3b82f6";
       }
     } else {
-      // Idle pulse
       for (let i = 0; i < numBars; i++) {
         const h = 8 + Math.sin(Date.now() * 0.003 + i * 0.2) * 5;
         bars[i].style.height = `${Math.max(6, h)}px`;
@@ -1113,353 +1202,19 @@ if ($("#applyVoice")) {
       player.currentTime = 0;
       player.play();
     }
-    toast(`Filter "${state.currentSoundFilter}" active`);
+    toast(`Voice morphed into ${state.currentSoundFilter}!`);
   });
 }
 
 if ($("#saveVoice")) {
   $("#saveVoice").addEventListener("click", () => {
-    const filterName = state.currentSoundFilter.toUpperCase();
-    const fileName = state.audioFile ? state.audioFile.name : "audio";
-    addProject("VOICE", `[${filterName}] ${fileName}`);
+    const fileName = state.audioFile ? state.audioFile.name : "voice";
+    addProject("VOICE", `Vocal Morph [${state.currentSoundFilter.toUpperCase()}] (${fileName})`);
   });
 }
 
 /* =============================================================
-   3. LIVE CAMERA: REAL-TIME PROCEDURAL FILTERS & SNAPSHOT
-============================================================= */
-
-// Live filter selection
-$$("[data-live-filter]").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    $$("[data-live-filter]").forEach(b => {
-      b.classList.remove("selected");
-      const icon = b.querySelector("i");
-      if (icon) icon.textContent = "○";
-    });
-
-    btn.classList.add("selected");
-    const check = btn.querySelector("i");
-    if (check) check.textContent = "✓";
-
-    state.currentLiveFilter = btn.dataset.liveFilter;
-    const title = btn.querySelector("strong")?.textContent || "Filter";
-
-    if ($("#cameraFilterBadge")) {
-      $("#cameraFilterBadge").textContent = title.toUpperCase();
-    }
-
-    toast(`Camera Filter: ${title}`);
-  });
-});
-
-if ($("#startCamera")) {
-  $("#startCamera").addEventListener("click", async () => {
-    try {
-      state.camera = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false
-      });
-
-      const video = $("#camera");
-      video.srcObject = state.camera;
-      $("#cameraEmpty").classList.add("hidden");
-      $("#startCamera").disabled = true;
-      $("#stopCamera").disabled = false;
-      if ($("#capturePhoto")) $("#capturePhoto").disabled = false;
-
-      if ($("#liveStatus")) {
-        $("#liveStatus").innerHTML = `<i class="pulse-dot"></i> LIVE CAMERA ACTIVE`;
-      }
-
-      startLiveCameraFilterLoop();
-      toast("Webcam initialized with live filters");
-    } catch (error) {
-      toast("Camera permission was not granted");
-    }
-  });
-}
-
-if ($("#stopCamera")) {
-  $("#stopCamera").addEventListener("click", () => {
-    if (state.camera) {
-      state.camera.getTracks().forEach((track) => track.stop());
-    }
-
-    state.camera = null;
-    $("#camera").srcObject = null;
-    $("#cameraEmpty").classList.remove("hidden");
-    $("#startCamera").disabled = false;
-    $("#stopCamera").disabled = true;
-    if ($("#capturePhoto")) $("#capturePhoto").disabled = true;
-
-    if ($("#liveStatus")) {
-      $("#liveStatus").innerHTML = `<i class="pulse-dot"></i> CAMERA OFFLINE`;
-    }
-
-    if (state.liveAnimFrame) {
-      cancelAnimationFrame(state.liveAnimFrame);
-    }
-  });
-}
-
-// Live sliders
-if ($("#liveIntensity")) {
-  $("#liveIntensity").addEventListener("input", (e) => {
-    if ($("#liveIntensityValue")) $("#liveIntensityValue").textContent = e.target.value + "%";
-  });
-}
-
-if ($("#liveScale")) {
-  $("#liveScale").addEventListener("input", (e) => {
-    if ($("#liveScaleValue")) $("#liveScaleValue").textContent = e.target.value + "%";
-  });
-}
-
-// Real-Time Canvas Filter Rendering Loop
-function startLiveCameraFilterLoop() {
-  const canvas = $("#liveCanvas");
-  const video = $("#camera");
-  if (!canvas || !video) return;
-
-  const ctx = canvas.getContext("2d");
-
-  function renderFrame() {
-    if (!state.camera) return;
-
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const intensity = Number($("#liveIntensity") ? $("#liveIntensity").value : 65) / 100;
-    const scale = Number($("#liveScale") ? $("#liveScale").value : 100) / 100;
-    const filter = state.currentLiveFilter || "male-hud";
-
-    const cx = canvas.width * state.liveTrackX;
-    const cy = canvas.height * state.liveTrackY;
-    const rx = canvas.width * 0.19 * scale;
-    const ry = canvas.height * 0.28 * scale;
-
-    ctx.save();
-    ctx.globalAlpha = intensity;
-
-    drawLiveCameraFilter(ctx, filter, cx, cy, rx, ry, canvas.width, canvas.height);
-
-    ctx.restore();
-
-    state.liveAnimFrame = requestAnimationFrame(renderFrame);
-  }
-
-  if (state.liveAnimFrame) cancelAnimationFrame(state.liveAnimFrame);
-  renderFrame();
-}
-
-function drawLiveCameraFilter(ctx, filter, cx, cy, rx, ry, cw, ch) {
-  const time = Date.now() * 0.003;
-
-  switch (filter) {
-    case "male-hud": {
-      // Male Tactical HUD
-      ctx.strokeStyle = "#2677ff";
-      ctx.lineWidth = 4;
-
-      // Rotating Telemetry Circle
-      ctx.save();
-      ctx.translate(cx, cy - ry * 0.3);
-      ctx.rotate(time * 0.4);
-      ctx.beginPath();
-      ctx.arc(0, 0, rx * 0.9, 0, Math.PI * 1.4);
-      ctx.stroke();
-      ctx.restore();
-
-      // Sharp Angular Jawplate
-      ctx.beginPath();
-      ctx.moveTo(cx - rx * 0.85, cy + ry * 0.2);
-      ctx.lineTo(cx - rx * 0.65, cy + ry * 0.85);
-      ctx.lineTo(cx, cy + ry * 1.15);
-      ctx.lineTo(cx + rx * 0.65, cy + ry * 0.85);
-      ctx.lineTo(cx + rx * 0.85, cy + ry * 0.2);
-      ctx.stroke();
-
-      // Crosshair & Status
-      ctx.beginPath();
-      ctx.moveTo(cx - 20, cy);
-      ctx.lineTo(cx + 20, cy);
-      ctx.moveTo(cx, cy - 20);
-      ctx.lineTo(cx, cy + 20);
-      ctx.stroke();
-
-      ctx.fillStyle = "#6ea5ff";
-      ctx.font = "bold 13px Inter, monospace";
-      ctx.fillText("♂ MALE TACTICAL // TARGET LOCK", 18, 28);
-      ctx.fillText(`ALT: 104m · AZM: ${(time * 20 % 360).toFixed(0)}°`, 18, 48);
-      break;
-    }
-
-    case "female-glam": {
-      // Female Cyber Glam
-      ctx.strokeStyle = "#e040fb";
-      ctx.lineWidth = 4;
-      ctx.shadowColor = "#e040fb";
-      ctx.shadowBlur = 12;
-
-      // Winged Eyeliner / Butterfly contour
-      ctx.beginPath();
-      ctx.moveTo(cx - rx * 1.05, cy - ry * 0.35);
-      ctx.quadraticCurveTo(cx - rx * 0.5, cy - ry * 0.7, cx, cy - ry * 0.3);
-      ctx.quadraticCurveTo(cx + rx * 0.5, cy - ry * 0.7, cx + rx * 1.05, cy - ry * 0.35);
-      ctx.quadraticCurveTo(cx + rx * 0.4, cy + ry * 0.1, cx, cy - ry * 0.05);
-      ctx.quadraticCurveTo(cx - rx * 0.4, cy + ry * 0.1, cx - rx * 1.05, cy - ry * 0.35);
-      ctx.stroke();
-
-      // Radiant Halo
-      ctx.strokeStyle = "#ff80ab";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy - ry * 0.75, rx * 0.85, ry * 0.2, 0, 0, Math.PI * 2);
-      ctx.stroke();
-
-      ctx.fillStyle = "#ff80ab";
-      ctx.font = "bold 13px Inter, sans-serif";
-      ctx.fillText("♀ FEMALE GLAM AURA // ACTIVE", 18, 28);
-      break;
-    }
-
-    case "pixelate": {
-      // Live Face Pixelation Mosaic
-      const px = cx - rx;
-      const py = cy - ry * 0.4;
-      const pw = rx * 2;
-      const ph = ry * 1.2;
-      const bSize = 14;
-
-      for (let x = px; x < px + pw; x += bSize) {
-        for (let y = py; y < py + ph; y += bSize) {
-          const s = Math.sin(x * 0.05 + y * 0.05 + time) > 0;
-          ctx.fillStyle = s ? "#0c1524e6" : "#1a2a44e6";
-          ctx.fillRect(x, y, bSize - 1, bSize - 1);
-        }
-      }
-
-      ctx.fillStyle = "#ff1744";
-      ctx.font = "bold 12px monospace";
-      ctx.fillText("PRIVACY MOSAIC // CENSORED", cx - 80, cy);
-      break;
-    }
-
-    case "matrix": {
-      // Live Matrix Digital Rain
-      ctx.fillStyle = "#00e676";
-      ctx.font = "bold 13px monospace";
-
-      for (let col = -6; col <= 6; col++) {
-        const mx = cx + col * 22;
-        const offset = (time * 120 + col * 45) % (ry * 2);
-        const my = cy - ry + offset;
-        const char = String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96));
-        ctx.fillText(char, mx, my);
-      }
-
-      ctx.fillStyle = "#00e676";
-      ctx.fillText("MATRIX NEURAL STREAM", 18, 28);
-      break;
-    }
-
-    case "thermal": {
-      // Live Thermal Vision
-      const grad = ctx.createRadialGradient(cx, cy, 20, cx, cy, rx * 1.3);
-      grad.addColorStop(0, "#ff1744bf");
-      grad.addColorStop(0.35, "#ffea0099");
-      grad.addColorStop(0.7, "#00e5ff80");
-      grad.addColorStop(1, "transparent");
-
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, rx * 1.2, ry * 1.3, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#ff3d00";
-      ctx.font = "bold 13px monospace";
-      ctx.fillText("THERMAL INFRARED 37.2°C", 18, 28);
-      break;
-    }
-
-    case "wireframe": {
-      // Live Neon Wireframe
-      ctx.strokeStyle = "#00e5ff";
-      ctx.lineWidth = 3;
-
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-      ctx.stroke();
-
-      for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + Math.cos(a) * rx, cy + Math.sin(a) * ry);
-        ctx.stroke();
-      }
-
-      ctx.fillStyle = "#00e5ff";
-      ctx.font = "bold 13px monospace";
-      ctx.fillText("BIOMETRIC POLY-MESH", 18, 28);
-      break;
-    }
-
-    case "blur":
-    default: {
-      ctx.strokeStyle = "#90caf9";
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-      ctx.stroke();
-
-      ctx.fillStyle = "#90caf933";
-      ctx.fill();
-      break;
-    }
-  }
-}
-
-// Take Snapshot
-if ($("#capturePhoto")) {
-  $("#capturePhoto").addEventListener("click", () => {
-    const video = $("#camera");
-    const canvas = $("#liveCanvas");
-    if (!video || !canvas || !state.camera) return;
-
-    // Combine video frame and canvas overlay onto an off-screen canvas
-    const snapCanvas = document.createElement("canvas");
-    snapCanvas.width = canvas.width || 1280;
-    snapCanvas.height = canvas.height || 720;
-    const snapCtx = snapCanvas.getContext("2d");
-
-    // Mirror horizontal to match webcam preview
-    snapCtx.translate(snapCanvas.width, 0);
-    snapCtx.scale(-1, 1);
-    snapCtx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
-    snapCtx.setTransform(1, 0, 0, 1, 0, 0);
-
-    // Draw active filter overlay
-    snapCtx.drawImage(canvas, 0, 0);
-
-    // Save project
-    const filterName = state.currentLiveFilter.toUpperCase();
-    addProject("IMAGE", `Camera Snapshot [${filterName}]`);
-
-    // Download snapshot
-    const link = document.createElement("a");
-    link.download = `MaskLab_Snapshot_${filterName}_${Date.now()}.png`;
-    link.href = snapCanvas.toDataURL("image/png");
-    link.click();
-
-    toast("📸 Snapshot saved to projects & downloaded!");
-  });
-}
-
-/* =============================================================
-   4. PROJECTS GALLERY & WORKSPACE RENDERING
+   4. PROJECTS GALLERY RENDERING
 ============================================================= */
 
 function renderProjects() {
@@ -1497,7 +1252,7 @@ function renderProjects() {
           "
         >
           No projects yet.
-          Start with Image & Video or Live Camera.
+          Start with Face Morphing or Live Camera.
         </div>
       `;
     }

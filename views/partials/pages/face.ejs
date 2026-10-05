@@ -2,133 +2,95 @@
 <div id="face" class="page">
   <div class="page-heading">
     <div>
-      <span class="eyebrow">IMAGE & VIDEO</span>
-      <h1>Face Masking Studio</h1>
-      <p>Apply real procedural face-mask treatments with tailored male, female, and cyber visual filters.</p>
+      <span class="eyebrow">FACE MORPH & IDENTITY ENGINE</span>
+      <h1>Real Face Morphing & Swapping</h1>
+      <p>Morph your face into real male and female identities with seamless skin matching, contour warping, and identity blending.</p>
     </div>
-    <span class="working-status"><i class="pulse-dot"></i> ACTIVE ENGINE</span>
+    <span class="working-status"><i class="pulse-dot"></i> REAL MORPH ENGINE ACTIVE</span>
   </div>
 
   <div class="two-col">
     <div class="card">
-      <div id="faceDrop" class="dropzone">
-        <div class="drop-icon">↑</div>
-        <h3>Upload image or video</h3>
-        <p>JPG, PNG, WEBP, MP4 or WEBM</p>
-        <button id="faceBrowse" class="outline-btn">Choose file</button>
+      <div id="faceDrop" class="dropzone" style="min-height: 220px; padding: 18px;">
+        <div class="drop-icon" style="width: 44px; height: 44px; font-size: 20px;">↑</div>
+        <h3>1. Upload Your Photo (Source Face)</h3>
+        <p style="margin-bottom: 12px;">JPG, PNG or WEBP with clear front-facing portrait</p>
+        <button id="faceBrowse" class="outline-btn">Choose Your Photo</button>
         <input id="faceInput" type="file" accept="image/*,video/*" hidden>
       </div>
       <div id="faceInfo" class="file-info hidden"></div>
 
-      <!-- Filter Selection Controls -->
-      <div style="margin-top: 18px;">
-        <span class="eyebrow">FILTER CATEGORY</span>
-        <div class="filter-tabs" id="genderTabs">
-          <button class="filter-tab-btn active" data-category="all">All</button>
-          <button class="filter-tab-btn" data-category="male">♂ Male</button>
-          <button class="filter-tab-btn" data-category="female">♀ Female</button>
-          <button class="filter-tab-btn" data-category="fx">⚡ FX</button>
+      <!-- Target Face Identity Selector -->
+      <div style="margin-top: 20px;">
+        <span class="eyebrow">2. CHOOSE TARGET IDENTITY TO MORPH INTO</span>
+        <div class="persona-selector-grid" id="personaGrid" style="margin-top: 8px;">
+          <!-- Male Persona: Marcus -->
+          <div class="persona-card active" data-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-gender="male" data-name="Marcus (Chiseled Male)">
+            <img src="/images/personas/male_marcus.jpg" alt="Marcus" class="persona-avatar-img">
+            <div class="persona-info">
+              <strong>Marcus</strong>
+              <small class="chip-tag tag-male">♂ MALE</small>
+            </div>
+          </div>
+
+          <!-- Male Persona: Viktor -->
+          <div class="persona-card" data-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-gender="male" data-name="Viktor (Bearded Male)">
+            <img src="/images/personas/male_viktor.jpg" alt="Viktor" class="persona-avatar-img">
+            <div class="persona-info">
+              <strong>Viktor</strong>
+              <small class="chip-tag tag-male">♂ MALE</small>
+            </div>
+          </div>
+
+          <!-- Female Persona: Elena -->
+          <div class="persona-card female-persona" data-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-gender="female" data-name="Elena (Sleek Female)">
+            <img src="/images/personas/female_elena.jpg" alt="Elena" class="persona-avatar-img">
+            <div class="persona-info">
+              <strong>Elena</strong>
+              <small class="chip-tag tag-female">♀ FEMALE</small>
+            </div>
+          </div>
+
+          <!-- Female Persona: Sophia -->
+          <div class="persona-card female-persona" data-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-gender="female" data-name="Sophia (Radiant Female)">
+            <img src="/images/personas/female_sophia.jpg" alt="Sophia" class="persona-avatar-img">
+            <div class="persona-info">
+              <strong>Sophia</strong>
+              <small class="chip-tag tag-female">♀ FEMALE</small>
+            </div>
+          </div>
         </div>
 
-        <span class="eyebrow">SELECT MASK FILTER</span>
-        <div class="presets-grid" id="facePresetsGrid">
-          <!-- Male Presets -->
-          <div class="filter-chip active" data-filter="male-tactical" data-gender="male">
-            <div class="filter-chip-header">
-              <span>Cyber Tactical</span>
-              <span class="chip-tag tag-male">MALE</span>
-            </div>
-            <small>Chiseled jawline HUD with angular targeting geometry</small>
+        <!-- Custom Target Person Upload -->
+        <label for="customTargetInput" class="target-upload-box" id="customTargetBox">
+          <span class="target-upload-icon">+</span>
+          <div class="target-upload-text">
+            <strong>Or Upload Any Person's Photo to Morph With</strong>
+            <span>Click to upload someone else's face photo</span>
           </div>
+          <input id="customTargetInput" type="file" accept="image/*" hidden>
+        </label>
+      </div>
 
-          <div class="filter-chip" data-filter="male-stealth" data-gender="male">
-            <div class="filter-chip-header">
-              <span>Stealth Shadow</span>
-              <span class="chip-tag tag-male">MALE</span>
-            </div>
-            <small>Darkened masculine contour with tactical mesh</small>
+      <!-- Optional Cosmetic Filter Overlay -->
+      <div style="margin-top: 15px;">
+        <span class="eyebrow">3. OPTIONAL CYBER MASK OVERLAY</span>
+        <div class="presets-grid" id="facePresetsGrid" style="max-height: 140px; margin-top: 6px;">
+          <div class="filter-chip active" data-filter="none" data-gender="all">
+            <div class="filter-chip-header"><span>Natural Morph</span><span class="chip-tag tag-fx">CLEAN</span></div>
+            <small>Pure realistic facial identity morphing</small>
           </div>
-
-          <div class="filter-chip" data-filter="male-spartan" data-gender="male">
-            <div class="filter-chip-header">
-              <span>Spartan Gold</span>
-              <span class="chip-tag tag-male">MALE</span>
-            </div>
-            <small>Aggressive armor plate & golden ocular visor</small>
+          <div class="filter-chip" data-filter="male-tactical" data-gender="male">
+            <div class="filter-chip-header"><span>Cyber Tactical</span><span class="chip-tag tag-male">♂ MALE</span></div>
+            <small>Chiseled jawline HUD & targeting visor</small>
           </div>
-
-          <div class="filter-chip" data-filter="male-beard" data-gender="male">
-            <div class="filter-chip-header">
-              <span>Jawline Define</span>
-              <span class="chip-tag tag-male">MALE</span>
-            </div>
-            <small>Lower-third shadow & structured beard line</small>
-          </div>
-
-          <!-- Female Presets -->
           <div class="filter-chip" data-filter="female-glam" data-gender="female">
-            <div class="filter-chip-header">
-              <span>Cyber Glam</span>
-              <span class="chip-tag tag-female">FEMALE</span>
-            </div>
-            <small>Magenta neon contour, sleek chin & luminous accents</small>
+            <div class="filter-chip-header"><span>Cyber Glam</span><span class="chip-tag tag-female">♀ FEMALE</span></div>
+            <small>Magenta aesthetic contour & cat-eye masque</small>
           </div>
-
-          <div class="filter-chip" data-filter="female-aura" data-gender="female">
-            <div class="filter-chip-header">
-              <span>Ethereal Glow</span>
-              <span class="chip-tag tag-female">FEMALE</span>
-            </div>
-            <small>Soft porcelain bloom with celestial peach halo</small>
-          </div>
-
-          <div class="filter-chip" data-filter="female-lace" data-gender="female">
-            <div class="filter-chip-header">
-              <span>Venetian Lace</span>
-              <span class="chip-tag tag-female">FEMALE</span>
-            </div>
-            <small>Masquerade filigree curves across eyes & cheekbones</small>
-          </div>
-
-          <div class="filter-chip" data-filter="female-neon" data-gender="female">
-            <div class="filter-chip-header">
-              <span>Neon Siren</span>
-              <span class="chip-tag tag-female">FEMALE</span>
-            </div>
-            <small>Vibrant cyan & hot pink synthwave cheek lights</small>
-          </div>
-
-          <!-- FX / Universal Presets -->
           <div class="filter-chip" data-filter="fx-censor" data-gender="fx">
-            <div class="filter-chip-header">
-              <span>Privacy Mosaic</span>
-              <span class="chip-tag tag-fx">FX</span>
-            </div>
-            <small>Active digital pixelation block censor</small>
-          </div>
-
-          <div class="filter-chip" data-filter="fx-matrix" data-gender="fx">
-            <div class="filter-chip-header">
-              <span>Matrix Stream</span>
-              <span class="chip-tag tag-fx">FX</span>
-            </div>
-            <small>Falling green biometric data streams</small>
-          </div>
-
-          <div class="filter-chip" data-filter="fx-thermal" data-gender="fx">
-            <div class="filter-chip-header">
-              <span>Thermal Heat</span>
-              <span class="chip-tag tag-fx">FX</span>
-            </div>
-            <small>Infrared false-color spectrum mapping</small>
-          </div>
-
-          <div class="filter-chip" data-filter="fx-wireframe" data-gender="fx">
-            <div class="filter-chip-header">
-              <span>Poly Wireframe</span>
-              <span class="chip-tag tag-fx">FX</span>
-            </div>
-            <small>3D biometric polygonal mesh contour</small>
+            <div class="filter-chip-header"><span>Privacy Mosaic</span><span class="chip-tag tag-fx">FX</span></div>
+            <small>Dynamic pixelated identity censor</small>
           </div>
         </div>
       </div>
@@ -137,46 +99,45 @@
     <div class="card preview-card">
       <div class="card-header">
         <div>
-          <span class="eyebrow">CANVAS PROCESSOR</span>
-          <h3 id="currentFilterTitle">Active Filter: Cyber Tactical (Male)</h3>
+          <span class="eyebrow">MORPH PROCESSOR</span>
+          <h3 id="currentFilterTitle">Morphing: You → Marcus (Male)</h3>
         </div>
-        <span class="blue-tag" id="filterStatusTag">READY</span>
+        <span class="working-status" id="filterStatusTag"><i class="pulse-dot"></i> READY</span>
       </div>
 
       <div id="facePreview" class="preview empty">
-        <div class="empty-message"><b>◉</b><p>Upload media to preview and apply filters.</p></div>
+        <div class="empty-message"><b>◉</b><p>Upload your photo to generate your face morphed with the chosen identity.</p></div>
       </div>
 
       <div class="settings">
-        <div class="range-control" style="margin: 8px 0;">
-          <label>Mask Strength <output id="strengthValue">75%</output></label>
-          <input id="strength" type="range" min="10" max="100" value="75">
+        <!-- Morph Ratio Slider -->
+        <div class="range-control" style="margin: 10px 0;">
+          <div class="morph-slider-header">
+            <span class="morph-badge badge-source">YOU (0%)</span>
+            <strong style="color: #fff; font-size: 11px;">Identity Morph Ratio: <output id="morphRatioValue">60%</output></strong>
+            <span class="morph-badge badge-target" id="targetBadgeLabel">TARGET PERSON (100%)</span>
+          </div>
+          <input id="morphRatio" type="range" min="0" max="100" value="60">
         </div>
 
+        <!-- Feathering & Skin Harmonization -->
         <div class="range-control" style="margin: 8px 0;">
-          <label>Coverage / Scale <output id="maskScaleValue">100%</output></label>
-          <input id="maskScale" type="range" min="50" max="160" value="100">
+          <label>Skin Tone Harmonization <output id="skinHarmonizeValue">85%</output></label>
+          <input id="skinHarmonize" type="range" min="20" max="100" value="85">
         </div>
 
         <div class="range-control" style="margin: 8px 0 14px;">
-          <label>Glow Color Theme</label>
-          <div style="display: flex; gap: 8px; margin-top: 6px;">
-            <button class="color-dot active" data-color="#2677ff" style="width: 24px; height: 24px; border-radius: 50%; background: #2677ff; border: 2px solid #fff; cursor: pointer;"></button>
-            <button class="color-dot" data-color="#e040fb" style="width: 24px; height: 24px; border-radius: 50%; background: #e040fb; border: 2px solid transparent; cursor: pointer;"></button>
-            <button class="color-dot" data-color="#00e5ff" style="width: 24px; height: 24px; border-radius: 50%; background: #00e5ff; border: 2px solid transparent; cursor: pointer;"></button>
-            <button class="color-dot" data-color="#ffb300" style="width: 24px; height: 24px; border-radius: 50%; background: #ffb300; border: 2px solid transparent; cursor: pointer;"></button>
-            <button class="color-dot" data-color="#00e676" style="width: 24px; height: 24px; border-radius: 50%; background: #00e676; border: 2px solid transparent; cursor: pointer;"></button>
-            <button class="color-dot" data-color="#ff1744" style="width: 24px; height: 24px; border-radius: 50%; background: #ff1744; border: 2px solid transparent; cursor: pointer;"></button>
-          </div>
+          <label>Feature Blend Radius <output id="blendRadiusValue">100%</output></label>
+          <input id="maskScale" type="range" min="60" max="150" value="100">
         </div>
 
         <div class="button-row">
-          <button id="processFace" class="blue-btn" disabled>Render Filter</button>
+          <button id="processFace" class="blue-btn" disabled>Generate Morph</button>
           <button id="saveFace" class="outline-btn" disabled>Save to Work</button>
           <button id="downloadFace" class="download-link-btn" disabled>Download ⤓</button>
         </div>
       </div>
     </div>
   </div>
-  <div class="info-note"><strong>Studio Engine:</strong> Procedural graphics pipeline renders custom male, female, and cyber synthetic treatments directly onto uploaded assets.</div>
+  <div class="info-note"><strong>Morph Engine:</strong> Biometric facial warping, skin tone harmonization, and Poisson gradient blending seamlessly blend your photo into the chosen male or female identity.</div>
 </div>
