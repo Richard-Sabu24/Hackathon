@@ -1035,21 +1035,10 @@ if ($('#useInLiveCameraBtn')) {
   $('#useInLiveCameraBtn').addEventListener('click', () => {
     if (!state.morphedResultUrl) return;
 
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      state.liveTargetImg = img;
-      state.liveTargetName = `Morphed (${state.targetPersonaName})`;
-      state.liveTargetGender = state.targetGender;
-
-      if ($('#lockedTargetImg')) $('#lockedTargetImg').src = img.src;
-      if ($('#lockedTargetName')) $('#lockedTargetName').textContent = state.liveTargetName;
-      if ($('#hudTargetText')) $('#hudTargetText').textContent = `TARGET: ${state.liveTargetName.toUpperCase()} (LOCKED)`;
-
+    loadAndAnalyzeTarget(state.morphedResultUrl, `Morphed (${state.targetPersonaName})`).then(() => {
       showPage('live');
       toast(`Morphed identity locked into Live Camera!`);
-    };
-    img.src = state.morphedResultUrl;
+    });
   });
 }
 
