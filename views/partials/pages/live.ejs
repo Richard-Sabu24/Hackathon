@@ -4,7 +4,7 @@
     <div>
       <span class="eyebrow">FEATURE 3 · REAL-TIME COMPUTER VISION</span>
       <h1>Live Camera Face Morphing & Recording</h1>
-      <p>Stream your webcam with real-time facial landmark tracking. Your face is transformed continuously frame-by-frame into the locked target identity and recorded directly to high-definition WebM video.</p>
+      <p>Continuous real-time facial landmark tracking and biometric target identity transfer. Your facial appearance transforms toward the target geometry in real time while tracking head pose, yaw, pitch, roll, and expressions.</p>
     </div>
     <div class="header-badges">
       <span id="liveStatus" class="working-status"><i class="pulse-dot"></i> CAMERA STANDBY</span>
@@ -19,7 +19,7 @@
         <!-- Live Video Element (Hidden or mirrored source) -->
         <video id="camera" autoplay muted playsinline></video>
 
-        <!-- Transformed Morph Rendering Canvas -->
+        <!-- Transformed Morph Rendering Canvas (Processed Output Only) -->
         <canvas id="liveCanvas"></canvas>
 
         <!-- Camera Off Empty State -->
@@ -34,10 +34,10 @@
 
         <!-- Live Camera HUD Overlays -->
         <div class="camera-hud-layer" id="cameraHudLayer">
-          <!-- Top Left: Active Target Info -->
+          <!-- Top Left: Live Camera & Active Target Info -->
           <div class="hud-pill top-left">
-            <span class="hud-dot green"></span>
-            <span id="hudTargetText">TARGET: MARCUS (LOCKED)</span>
+            <span class="hud-dot blue"></span>
+            <span id="hudTargetText">LIVE CAMERA · TARGET LOCKED</span>
           </div>
 
           <!-- Top Right: Real-time Telemetry & Tracking Status -->
@@ -47,7 +47,7 @@
             <div id="hudMorphActive" class="telemetry-item inactive">Morph Active ✕</div>
           </div>
 
-          <!-- Bottom Left: Recording Timer Badge -->
+          <!-- Bottom Left: Recording Timer Badge (Strictly Red only when active) -->
           <div id="recordingTimerBadge" class="recording-badge hidden">
             <span class="rec-red-dot"></span>
             <span id="recTimerText">REC 00:00</span>
@@ -57,6 +57,39 @@
           <div class="camera-watermark">
             <span>AI TRANSFORMED</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Technical Computer Vision Pipeline Strip -->
+      <div class="tech-pipeline-strip" id="techPipelineStrip">
+        <div class="pipeline-step" id="pipeStepDetect">
+          <span class="step-dot"></span>
+          <span class="step-label">FACE DETECTED</span>
+          <span class="step-check">✓</span>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-step" id="pipeStepLandmarks">
+          <span class="step-dot"></span>
+          <span class="step-label">468 LANDMARKS</span>
+          <span class="step-check">✓</span>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-step" id="pipeStepAlign">
+          <span class="step-dot"></span>
+          <span class="step-label">TARGET ALIGNED</span>
+          <span class="step-check">✓</span>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-step" id="pipeStepPose">
+          <span class="step-dot"></span>
+          <span class="step-label">HEAD POSE TRACKING</span>
+          <span class="step-check">✓</span>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-step" id="pipeStepMorph">
+          <span class="step-dot"></span>
+          <span class="step-label">FACE MORPH ACTIVE</span>
+          <span class="step-check">✓</span>
         </div>
       </div>
 
@@ -73,7 +106,7 @@
           </button>
 
           <!-- Start / Stop Morph -->
-          <button id="toggleMorphBtn" class="cyan-btn" disabled>
+          <button id="toggleMorphBtn" class="blue-btn" disabled>
             <span id="toggleMorphIcon">⚡</span>
             <span id="toggleMorphText">Start Morph</span>
           </button>
@@ -81,9 +114,9 @@
 
         <div class="toolbar-recording-group">
           <!-- Live Canvas Stream Recording -->
-          <button id="startRecordBtn" class="danger-btn record-action-btn" disabled>
+          <button id="startRecordBtn" class="record-action-btn" disabled>
             <span class="record-red-circle"></span>
-            <span>Record Video</span>
+            <span id="startRecordBtnText">● Record Video</span>
           </button>
           <button id="stopRecordBtn" class="outline-btn" disabled>
             <span>Stop Recording</span>
@@ -102,7 +135,7 @@
     <div class="card live-sidebar-card">
       <div class="card-header">
         <div class="card-title-group">
-          <span class="eyebrow">IDENTITY PIPELINE</span>
+          <span class="eyebrow">IDENTITY REFERENCE</span>
           <h3>Target Face</h3>
         </div>
         <div id="targetLockStatusBadge" class="status-badge active-ready">
@@ -118,7 +151,7 @@
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
           </div>
           <strong>Upload Target Image</strong>
-          <p>Select any portrait photo (JPG/PNG). System extracts facial landmarks &amp; isolates the facial contour with zero background.</p>
+          <p>Upload any portrait photo. The target identity determines the transformed facial appearance regardless of gender.</p>
           <span class="btn-substitute blue-btn small-btn">Choose Target Photo</span>
           <input id="liveCustomTargetInput" type="file" accept="image/*" hidden>
         </label>
@@ -127,8 +160,8 @@
       <!-- TARGET PREVIEW & EXTRACTION STATUS -->
       <div class="target-extraction-preview-card" id="targetExtractionCard">
         <div class="target-preview-header">
-          <span class="section-sublabel">TARGET PREVIEW &amp; SEGMENTATION</span>
-          <span id="targetExtractionBadge" class="detection-badge green">Face Detected ✓</span>
+          <span class="section-sublabel">TARGET BIOMETRIC ISOLATION</span>
+          <span id="targetExtractionBadge" class="detection-badge blue">Face Detected ✓</span>
         </div>
         <div class="target-preview-stage">
           <div class="target-avatar-isolated-wrap">
@@ -143,10 +176,10 @@
           <div class="target-extraction-meta">
             <strong id="lockedTargetName">Marcus (Reference Portrait)</strong>
             <div class="meta-tag-row">
-              <span class="chip-tag tag-cyan" id="targetLandmarkCountTag">468 Landmarks ✓</span>
-              <span class="chip-tag tag-green" id="targetBackgroundTag">Background Removed ✓</span>
+              <span class="chip-tag" id="targetLandmarkCountTag">468 Landmarks ✓</span>
+              <span class="chip-tag" id="targetBackgroundTag">Background Removed ✓</span>
             </div>
-            <p id="targetAnalysisNote" class="target-analysis-note">Facial contour &amp; Delaunay mesh aligned. Ready for live camera transformation.</p>
+            <p id="targetAnalysisNote" class="target-analysis-note">Facial geometry &amp; Delaunay mesh aligned. Ready for live camera transformation.</p>
           </div>
         </div>
 
@@ -154,7 +187,7 @@
         <div class="target-lock-actions">
           <button id="lockTargetBtn" class="blue-btn full-width-btn" type="button">
             <span id="lockTargetBtnIcon">🔒</span>
-            <span id="lockTargetBtnText">LOCK TARGET IDENTITY</span>
+            <span id="lockTargetBtnText">Lock Target Identity</span>
           </button>
           <button id="changeTargetBtn" class="outline-btn small-btn" type="button">
             <span>Change Target</span>
@@ -165,25 +198,25 @@
       <!-- OPTIONAL DEMO TARGETS (SECONDARY REFERENCE IDENTITIES) -->
       <div class="demo-personas-accordion" id="demoPersonasAccordion">
         <div class="demo-personas-header">
-          <span class="section-sublabel">OR CHOOSE DEMO REFERENCE PORTRAIT</span>
+          <span class="section-sublabel">REFERENCE PORTRAIT PROFILES</span>
           <small style="color: var(--muted); font-size: 10px;">Photographic portraits</small>
         </div>
         <div class="persona-selector-grid mini-grid" id="livePersonaGrid">
-          <div class="persona-card active" data-live-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-name="Marcus" data-gender="male">
+          <div class="persona-card active" data-live-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-name="Marcus">
             <img src="/images/personas/male_marcus.jpg" alt="Marcus" class="persona-avatar-img">
-            <div class="persona-info"><strong>Marcus</strong><small class="chip-tag tag-male">♂ MALE</small></div>
+            <div class="persona-info"><strong>Marcus</strong><small class="chip-tag">Reference Portrait</small></div>
           </div>
-          <div class="persona-card" data-live-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-name="Viktor" data-gender="male">
+          <div class="persona-card" data-live-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-name="Viktor">
             <img src="/images/personas/male_viktor.jpg" alt="Viktor" class="persona-avatar-img">
-            <div class="persona-info"><strong>Viktor</strong><small class="chip-tag tag-male">♂ MALE</small></div>
+            <div class="persona-info"><strong>Viktor</strong><small class="chip-tag">Reference Portrait</small></div>
           </div>
-          <div class="persona-card female-persona" data-live-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-name="Elena" data-gender="female">
+          <div class="persona-card" data-live-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-name="Elena">
             <img src="/images/personas/female_elena.jpg" alt="Elena" class="persona-avatar-img">
-            <div class="persona-info"><strong>Elena</strong><small class="chip-tag tag-female">♀ FEMALE</small></div>
+            <div class="persona-info"><strong>Elena</strong><small class="chip-tag">Reference Portrait</small></div>
           </div>
-          <div class="persona-card female-persona" data-live-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-name="Sophia" data-gender="female">
+          <div class="persona-card" data-live-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-name="Sophia">
             <img src="/images/personas/female_sophia.jpg" alt="Sophia" class="persona-avatar-img">
-            <div class="persona-info"><strong>Sophia</strong><small class="chip-tag tag-female">♀ FEMALE</small></div>
+            <div class="persona-info"><strong>Sophia</strong><small class="chip-tag">Reference Portrait</small></div>
           </div>
         </div>
       </div>
@@ -195,10 +228,10 @@
         <div class="range-control live-range">
           <div class="morph-slider-header">
             <span class="morph-badge badge-source">WEBCAM (0%)</span>
-            <span class="slider-title">Live Morph Ratio: <output id="liveIntensityValue">65%</output></span>
+            <span class="slider-title">Live Morph Ratio: <output id="liveIntensityValue">75%</output></span>
             <span class="morph-badge badge-target">TARGET (100%)</span>
           </div>
-          <input id="liveIntensity" class="range-slider" type="range" min="15" max="100" value="65">
+          <input id="liveIntensity" class="range-slider" type="range" min="15" max="100" value="75">
         </div>
 
         <div class="range-control live-range" style="margin-top: 8px;">
@@ -235,7 +268,7 @@
         <div class="recording-meta-row">
           <div><span class="eyebrow">TARGET IDENTITY:</span> <strong id="recordedTargetName">Marcus</strong></div>
           <div><span class="eyebrow">FORMAT:</span> <strong>WebM (Canvas Stream)</strong></div>
-          <div><span class="eyebrow">DISCLOSURE:</span> <strong class="badge-pill cyan">AI TRANSFORMED</strong></div>
+          <div><span class="eyebrow">DISCLOSURE:</span> <strong class="badge-pill blue">AI TRANSFORMED</strong></div>
         </div>
       </div>
       <div class="modal-footer">

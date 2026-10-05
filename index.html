@@ -161,7 +161,7 @@
 
   <div class="tool-grid three-core-grid">
     <article class="tool-card feature-hero-card" data-go="face">
-      <div class="card-glow-top cyan"></div>
+      <div class="card-glow-top"></div>
       <div class="tool-number">01</div>
       <div class="card-icon-pill">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 0 0-9 9 9 9 0 0 0 9 9 9 9 0 0 0 9-9 9 9 0 0 0-9-9z"/><path d="M9 10h.01M15 10h.01M9.5 15.5a3.5 3.5 0 0 0 5 0"/></svg>
@@ -169,15 +169,15 @@
       <h3>FACE MORPH</h3>
       <p>Upload Source Person (Input A) and Target Face (Input B). Real computer-vision landmark alignment, Delaunay mesh warping, skin tone harmonization, and interactive before/after split slider.</p>
       <div class="card-tags">
-        <span class="chip-tag tag-cyan">468 Landmarks</span>
-        <span class="chip-tag tag-male">Geometric Align</span>
-        <span class="chip-tag tag-fx">Split Slider</span>
+        <span class="chip-tag">468 Landmarks</span>
+        <span class="chip-tag">Geometric Align</span>
+        <span class="chip-tag">Split Slider</span>
       </div>
       <span class="open-link">Open Face Morph →</span>
     </article>
 
     <article class="tool-card feature-hero-card" data-go="voice">
-      <div class="card-glow-top purple"></div>
+      <div class="card-glow-top"></div>
       <div class="tool-number">02</div>
       <div class="card-icon-pill">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
@@ -185,9 +185,9 @@
       <h3>VOICE STUDIO</h3>
       <p>Record voice with microphone or upload audio. Transform into 9 styles (Female, Male, Child, Elderly, Robotic, Deep, High Pitch, Cartoon, Character) with real-time audio visualizer & DSP.</p>
       <div class="card-tags">
-        <span class="chip-tag tag-female">9 Voice Styles</span>
-        <span class="chip-tag tag-cyan">Formant Modulation</span>
-        <span class="chip-tag tag-fx">Mic Recording</span>
+        <span class="chip-tag">9 Voice Styles</span>
+        <span class="chip-tag">Formant Modulation</span>
+        <span class="chip-tag">Mic Recording</span>
       </div>
       <span class="open-link">Open Voice Studio →</span>
     </article>
@@ -310,35 +310,35 @@
           <small>Verified landmark profiles</small>
         </div>
         <div class="persona-selector-grid" id="personaGrid">
-          <div class="persona-card active" data-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-name="Marcus" data-gender="male">
+          <div class="persona-card active" data-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-name="Marcus">
             <img src="/images/personas/male_marcus.jpg" alt="Marcus" class="persona-avatar-img">
             <div class="persona-info">
               <strong>Marcus</strong>
-              <small class="chip-tag tag-male">♂ MALE</small>
+              <small class="chip-tag">Reference Portrait</small>
             </div>
           </div>
 
-          <div class="persona-card" data-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-name="Viktor" data-gender="male">
+          <div class="persona-card" data-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-name="Viktor">
             <img src="/images/personas/male_viktor.jpg" alt="Viktor" class="persona-avatar-img">
             <div class="persona-info">
               <strong>Viktor</strong>
-              <small class="chip-tag tag-male">♂ MALE</small>
+              <small class="chip-tag">Reference Portrait</small>
             </div>
           </div>
 
-          <div class="persona-card female-persona" data-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-name="Elena" data-gender="female">
+          <div class="persona-card" data-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-name="Elena">
             <img src="/images/personas/female_elena.jpg" alt="Elena" class="persona-avatar-img">
             <div class="persona-info">
               <strong>Elena</strong>
-              <small class="chip-tag tag-female">♀ FEMALE</small>
+              <small class="chip-tag">Reference Portrait</small>
             </div>
           </div>
 
-          <div class="persona-card female-persona" data-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-name="Sophia" data-gender="female">
+          <div class="persona-card" data-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-name="Sophia">
             <img src="/images/personas/female_sophia.jpg" alt="Sophia" class="persona-avatar-img">
             <div class="persona-info">
               <strong>Sophia</strong>
-              <small class="chip-tag tag-female">♀ FEMALE</small>
+              <small class="chip-tag">Reference Portrait</small>
             </div>
           </div>
         </div>
@@ -648,9 +648,9 @@
       <div class="card-header">
         <div class="card-title-group">
           <span class="eyebrow">TRANSFORMATION PROFILE</span>
-          <h3 id="currentVoiceTitle">Vocal Target: Female (Sleek ♀)</h3>
+          <h3 id="currentVoiceTitle">Vocal Target: Female (Sleek)</h3>
         </div>
-        <span class="badge-pill cyan" id="dspStatusBadge">DSP ACTIVE</span>
+        <span class="badge-pill blue" id="dspStatusBadge">DSP ACTIVE</span>
       </div>
 
       <!-- 9 Voice Styles Selection Grid -->
@@ -658,19 +658,19 @@
         <span class="section-sublabel">CHOOSE TARGET VOCAL IDENTITY</span>
         <div class="voice-presets-grid" id="soundPresetsGrid">
           <!-- 1. Female -->
-          <div class="sound-card active" data-sound="female" data-name="Female (Sleek ♀)" data-pitch="1.28">
+          <div class="sound-card active" data-sound="female" data-name="Female (Sleek)" data-pitch="1.28">
             <span class="sound-icon">✨</span>
             <div class="sound-card-text">
-              <strong>Female (Sleek ♀)</strong>
-              <small>+4 st · Feminine formants</small>
+              <strong>Female (Sleek)</strong>
+              <small>+4 st · Formant modulation</small>
             </div>
           </div>
 
           <!-- 2. Male -->
-          <div class="sound-card" data-sound="male" data-name="Male (Deep ♂)" data-pitch="0.80">
+          <div class="sound-card" data-sound="male" data-name="Male (Deep)" data-pitch="0.80">
             <span class="sound-icon">🎙️</span>
             <div class="sound-card-text">
-              <strong>Male (Deep ♂)</strong>
+              <strong>Male (Deep)</strong>
               <small>-4 st · Low chest resonance</small>
             </div>
           </div>
@@ -841,10 +841,10 @@
 
         <!-- Live Camera HUD Overlays -->
         <div class="camera-hud-layer" id="cameraHudLayer">
-          <!-- Top Left: Active Target Info -->
+          <!-- Top Left: Live Camera & Active Target Info -->
           <div class="hud-pill top-left">
-            <span class="hud-dot green"></span>
-            <span id="hudTargetText">TARGET: MARCUS (LOCKED)</span>
+            <span class="hud-dot blue"></span>
+            <span id="hudTargetText">LIVE CAMERA · TARGET LOCKED</span>
           </div>
 
           <!-- Top Right: Real-time Telemetry & Tracking Status -->
@@ -867,6 +867,39 @@
         </div>
       </div>
 
+      <!-- Technical Computer Vision Pipeline Strip -->
+      <div class="tech-pipeline-strip" id="techPipelineStrip">
+        <div class="pipeline-step" id="pipeStepDetect">
+          <span class="step-dot"></span>
+          <span class="step-label">FACE DETECTED</span>
+          <span class="step-check">✓</span>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-step" id="pipeStepLandmarks">
+          <span class="step-dot"></span>
+          <span class="step-label">468 LANDMARKS</span>
+          <span class="step-check">✓</span>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-step" id="pipeStepAlign">
+          <span class="step-dot"></span>
+          <span class="step-label">TARGET ALIGNED</span>
+          <span class="step-check">✓</span>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-step" id="pipeStepPose">
+          <span class="step-dot"></span>
+          <span class="step-label">HEAD POSE TRACKING</span>
+          <span class="step-check">✓</span>
+        </div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-step" id="pipeStepMorph">
+          <span class="step-dot"></span>
+          <span class="step-label">FACE MORPH ACTIVE</span>
+          <span class="step-check">✓</span>
+        </div>
+      </div>
+
       <!-- Camera Action Controls Bar -->
       <div class="camera-controls-toolbar">
         <div class="toolbar-primary-group">
@@ -880,7 +913,7 @@
           </button>
 
           <!-- Start / Stop Morph -->
-          <button id="toggleMorphBtn" class="cyan-btn" disabled>
+          <button id="toggleMorphBtn" class="blue-btn" disabled>
             <span id="toggleMorphIcon">⚡</span>
             <span id="toggleMorphText">Start Morph</span>
           </button>
@@ -888,9 +921,9 @@
 
         <div class="toolbar-recording-group">
           <!-- Live Canvas Stream Recording -->
-          <button id="startRecordBtn" class="danger-btn record-action-btn" disabled>
+          <button id="startRecordBtn" class="record-action-btn" disabled>
             <span class="record-red-circle"></span>
-            <span>Record Video</span>
+            <span id="startRecordBtnText">● Record Video</span>
           </button>
           <button id="stopRecordBtn" class="outline-btn" disabled>
             <span>Stop Recording</span>
@@ -909,7 +942,7 @@
     <div class="card live-sidebar-card">
       <div class="card-header">
         <div class="card-title-group">
-          <span class="eyebrow">IDENTITY PIPELINE</span>
+          <span class="eyebrow">IDENTITY REFERENCE</span>
           <h3>Target Face</h3>
         </div>
         <div id="targetLockStatusBadge" class="status-badge active-ready">
@@ -925,7 +958,7 @@
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
           </div>
           <strong>Upload Target Image</strong>
-          <p>Select any portrait photo (JPG/PNG). System extracts facial landmarks &amp; isolates the facial contour with zero background.</p>
+          <p>Upload any portrait photo. The target identity determines the transformed facial appearance regardless of gender.</p>
           <span class="btn-substitute blue-btn small-btn">Choose Target Photo</span>
           <input id="liveCustomTargetInput" type="file" accept="image/*" hidden>
         </label>
@@ -934,8 +967,8 @@
       <!-- TARGET PREVIEW & EXTRACTION STATUS -->
       <div class="target-extraction-preview-card" id="targetExtractionCard">
         <div class="target-preview-header">
-          <span class="section-sublabel">TARGET PREVIEW &amp; SEGMENTATION</span>
-          <span id="targetExtractionBadge" class="detection-badge green">Face Detected ✓</span>
+          <span class="section-sublabel">TARGET BIOMETRIC ISOLATION</span>
+          <span id="targetExtractionBadge" class="detection-badge blue">Face Detected ✓</span>
         </div>
         <div class="target-preview-stage">
           <div class="target-avatar-isolated-wrap">
@@ -950,10 +983,10 @@
           <div class="target-extraction-meta">
             <strong id="lockedTargetName">Marcus (Reference Portrait)</strong>
             <div class="meta-tag-row">
-              <span class="chip-tag tag-cyan" id="targetLandmarkCountTag">468 Landmarks ✓</span>
-              <span class="chip-tag tag-green" id="targetBackgroundTag">Background Removed ✓</span>
+              <span class="chip-tag" id="targetLandmarkCountTag">468 Landmarks ✓</span>
+              <span class="chip-tag" id="targetBackgroundTag">Background Removed ✓</span>
             </div>
-            <p id="targetAnalysisNote" class="target-analysis-note">Facial contour &amp; Delaunay mesh aligned. Ready for live camera transformation.</p>
+            <p id="targetAnalysisNote" class="target-analysis-note">Facial geometry &amp; Delaunay mesh aligned. Ready for live camera transformation.</p>
           </div>
         </div>
 
@@ -961,7 +994,7 @@
         <div class="target-lock-actions">
           <button id="lockTargetBtn" class="blue-btn full-width-btn" type="button">
             <span id="lockTargetBtnIcon">🔒</span>
-            <span id="lockTargetBtnText">LOCK TARGET IDENTITY</span>
+            <span id="lockTargetBtnText">Lock Target Identity</span>
           </button>
           <button id="changeTargetBtn" class="outline-btn small-btn" type="button">
             <span>Change Target</span>
@@ -972,25 +1005,25 @@
       <!-- OPTIONAL DEMO TARGETS (SECONDARY REFERENCE IDENTITIES) -->
       <div class="demo-personas-accordion" id="demoPersonasAccordion">
         <div class="demo-personas-header">
-          <span class="section-sublabel">OR CHOOSE DEMO REFERENCE PORTRAIT</span>
+          <span class="section-sublabel">REFERENCE PORTRAIT PROFILES</span>
           <small style="color: var(--muted); font-size: 10px;">Photographic portraits</small>
         </div>
         <div class="persona-selector-grid mini-grid" id="livePersonaGrid">
-          <div class="persona-card active" data-live-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-name="Marcus" data-gender="male">
+          <div class="persona-card active" data-live-persona="male-marcus" data-src="/images/personas/male_marcus.jpg" data-name="Marcus">
             <img src="/images/personas/male_marcus.jpg" alt="Marcus" class="persona-avatar-img">
-            <div class="persona-info"><strong>Marcus</strong><small class="chip-tag tag-male">♂ MALE</small></div>
+            <div class="persona-info"><strong>Marcus</strong><small class="chip-tag">Reference Portrait</small></div>
           </div>
-          <div class="persona-card" data-live-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-name="Viktor" data-gender="male">
+          <div class="persona-card" data-live-persona="male-viktor" data-src="/images/personas/male_viktor.jpg" data-name="Viktor">
             <img src="/images/personas/male_viktor.jpg" alt="Viktor" class="persona-avatar-img">
-            <div class="persona-info"><strong>Viktor</strong><small class="chip-tag tag-male">♂ MALE</small></div>
+            <div class="persona-info"><strong>Viktor</strong><small class="chip-tag">Reference Portrait</small></div>
           </div>
-          <div class="persona-card female-persona" data-live-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-name="Elena" data-gender="female">
+          <div class="persona-card" data-live-persona="female-elena" data-src="/images/personas/female_elena.jpg" data-name="Elena">
             <img src="/images/personas/female_elena.jpg" alt="Elena" class="persona-avatar-img">
-            <div class="persona-info"><strong>Elena</strong><small class="chip-tag tag-female">♀ FEMALE</small></div>
+            <div class="persona-info"><strong>Elena</strong><small class="chip-tag">Reference Portrait</small></div>
           </div>
-          <div class="persona-card female-persona" data-live-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-name="Sophia" data-gender="female">
+          <div class="persona-card" data-live-persona="female-sophia" data-src="/images/personas/female_sophia.jpg" data-name="Sophia">
             <img src="/images/personas/female_sophia.jpg" alt="Sophia" class="persona-avatar-img">
-            <div class="persona-info"><strong>Sophia</strong><small class="chip-tag tag-female">♀ FEMALE</small></div>
+            <div class="persona-info"><strong>Sophia</strong><small class="chip-tag">Reference Portrait</small></div>
           </div>
         </div>
       </div>

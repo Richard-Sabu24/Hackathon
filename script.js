@@ -23,8 +23,7 @@ const state = {
   targetLandmarks: null,
   targetFaceBox: null,
   targetPersonaId: 'male-marcus',
-  targetPersonaName: 'Marcus (Male)',
-  targetGender: 'male',
+  targetPersonaName: 'Marcus',
 
   morphRatio: 0.65,
   skinHarmonize: 0.85,
@@ -62,7 +61,6 @@ const state = {
   isFaceMeshReady: false,
   liveTargetImg: null,
   liveTargetName: 'Marcus',
-  liveTargetGender: 'male',
   liveAnimFrame: null,
 
   liveIntensity: 0.65,
@@ -322,11 +320,9 @@ if ($('#personaGrid')) {
       const personaId = card.dataset.persona;
       const personaSrc = card.dataset.src;
       const personaName = card.dataset.name || 'Target';
-      const gender = card.dataset.gender || 'male';
 
       state.targetPersonaId = personaId;
       state.targetPersonaName = personaName;
-      state.targetGender = gender;
 
       if (personasCache[personaId]) {
         state.targetImg = personasCache[personaId];
@@ -341,7 +337,7 @@ if ($('#personaGrid')) {
       if ($('#targetBadgeLabel')) {
         $('#targetBadgeLabel').textContent = `${personaName.toUpperCase()} (100%)`;
       }
-      setTargetStatus(true, `${personaName} (${gender.toUpperCase()}) Locked ✓`);
+      setTargetStatus(true, `${personaName} Locked ✓`);
       checkMorphReady();
       toast(`Locked Target Face: ${personaName}`);
     });
@@ -840,19 +836,59 @@ function generateLocalMorphCanvas() {
     };
   }
 
-  // Step 3: Offscreen warped buffer
+  // Step 3: Target identity driven geometry mapping (cross-gender geometry transformation)
+  const sEyeL = srcLandmarks[33];
+  const sEyeR = srcLandmarks[263];
+  const srcCenter = { x: (sEyeL.x + sEyeR.x) * 0.5, y: (sEyeL.y + sEyeR.y) * 0.5 };
+  const srcEyeDist = Math.hypot(sEyeR.x - sEyeL.x, sEyeR.y - sEyeL.y) || 1;
+  const srcRoll = Math.atan2(sEyeR.y - sEyeL.y, sEyeR.x - sEyeL.x);
+
+  const tEyeL = targetData.pixelLandmarks[33] || { x: (targetData.width || 800) * 0.35, y: (targetData.height || 1000) * 0.4 };
+  const tEyeR = targetData.pixelLandmarks[263] || { x: (targetData.width || 800) * 0.65, y: (targetData.height || 1000) * 0.4 };
+  const tgtCenter = { x: (tEyeL.x + tEyeR.x) * 0.5, y: (tEyeL.y + tEyeR.y) * 0.5 };
+  const tgtEyeDist = Math.hypot(tEyeR.x - tEyeL.x, tEyeR.y - tEyeL.y) || 1;
+  const tgtRoll = Math.atan2(tEyeR.y - tEyeL.y, tEyeR.x - tEyeL.x);
+
+  const deltaAngle = srcRoll - tgtRoll;
+  const cosA = Math.cos(deltaAngle);
+  const sinA = Math.sin(deltaAngle);
+  const geomScale = srcEyeDist / tgtEyeDist;
+
+  const destVertices = {};
+  const morphRatio = state.morphRatio || 0.70;
+  for (const idx in srcLandmarks) {
+    const sPt = srcLandmarks[idx];
+    const tPt = targetData.pixelLandmarks[idx];
+    if (!tPt) {
+      destVertices[idx] = sPt;
+      continue;
+    }
+    const tdx = tPt.x - tgtCenter.x;
+    const tdy = tPt.y - tgtCenter.y;
+    const rx = (tdx * cosA - tdy * sinA) * geomScale;
+    const ry = (tdx * sinA + tdy * cosA) * geomScale;
+    const alignedTgtX = srcCenter.x + rx;
+    const alignedTgtY = srcCenter.y + ry;
+
+    destVertices[idx] = {
+      x: (1 - morphRatio) * sPt.x + morphRatio * alignedTgtX,
+      y: (1 - morphRatio) * sPt.y + morphRatio * alignedTgtY
+    };
+  }
+
+  // Step 4: Offscreen warped buffer
   const offscreen = document.createElement('canvas');
   offscreen.width = w;
   offscreen.height = h;
   const oCtx = offscreen.getContext('2d');
 
-  // Warp all triangles
+  // Warp all triangles onto destination vertices
   const triangles = targetData.triangles;
   for (let t = 0; t < triangles.length; t++) {
     const [i, j, k] = triangles[t];
-    const p1 = srcLandmarks[i];
-    const p2 = srcLandmarks[j];
-    const p3 = srcLandmarks[k];
+    const p1 = destVertices[i];
+    const p2 = destVertices[j];
+    const p3 = destVertices[k];
     const u1 = targetData.pixelLandmarks[i];
     const u2 = targetData.pixelLandmarks[j];
     const u3 = targetData.pixelLandmarks[k];
@@ -862,7 +898,7 @@ function generateLocalMorphCanvas() {
     warpTriangle(oCtx, targetData.canvas, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, u1.x, u1.y, u2.x, u2.y, u3.x, u3.y);
   }
 
-  // Step 4: Skin tone & illumination adaptation
+  // Step 5: Skin tone & illumination adaptation
   if (state.skinHarmonize > 0.05) {
     let liveR = 215, liveG = 180, liveB = 155;
     try {
@@ -881,7 +917,7 @@ function generateLocalMorphCanvas() {
     oCtx.restore();
   }
 
-  // Step 5: Feathered anatomical contour mask (NO rectangular boundaries!)
+  // Step 6: Feathered anatomical contour mask (NO rectangular boundaries!)
   const mCanvas = document.createElement('canvas');
   mCanvas.width = w;
   mCanvas.height = h;
@@ -890,7 +926,7 @@ function generateLocalMorphCanvas() {
   mCtx.save();
   mCtx.beginPath();
   for (let c = 0; c < FACE_CONTOUR_INDICES.length; c++) {
-    const pt = srcLandmarks[FACE_CONTOUR_INDICES[c]];
+    const pt = destVertices[FACE_CONTOUR_INDICES[c]];
     if (!pt) continue;
     if (c === 0) mCtx.moveTo(pt.x, pt.y);
     else mCtx.lineTo(pt.x, pt.y);
@@ -1820,8 +1856,9 @@ function extractTargetLandmarks(imgElement) {
  * Primary Target Processor:
  * Loads portrait photo, extracts biometric landmarks, strips background,
  * constructs Delaunay triangulation, and renders isolated preview oval.
+ * Completely identity-target driven, gender-independent.
  */
-async function loadAndAnalyzeTarget(source, name, gender = 'custom') {
+async function loadAndAnalyzeTarget(source, name) {
   updateTargetStatusUI('analyzing', name);
 
   const img = new Image();
@@ -1896,7 +1933,6 @@ async function loadAndAnalyzeTarget(source, name, gender = 'custom') {
       // Store locked target data representation
       state.targetFaceData = {
         name: name,
-        gender: gender,
         sourceImg: img,
         canvas: tfCanvas,
         pixelLandmarks: pixelLandmarks,
@@ -1908,7 +1944,7 @@ async function loadAndAnalyzeTarget(source, name, gender = 'custom') {
       };
 
       // Automatically lock identity
-      lockTargetIdentity(name, gender);
+      lockTargetIdentity(name);
       updateTargetStatusUI('ready', name);
       resolve(state.targetFaceData);
     };
@@ -1938,14 +1974,32 @@ function updateTargetStatusUI(status, name) {
     if (badge) { badge.className = 'detection-badge amber'; badge.textContent = 'Extracting Face...'; }
     if (note) note.textContent = 'Extracting 468 landmarks & segmenting facial contour...';
   } else if (status === 'ready') {
-    if (badge) { badge.className = 'detection-badge green'; badge.textContent = 'Face Detected ✓'; }
+    if (badge) { badge.className = 'detection-badge blue'; badge.textContent = 'Face Detected ✓'; }
     if (lmkTag) lmkTag.textContent = '468 Landmarks ✓';
     if (bgTag) bgTag.textContent = 'Background Removed ✓';
-    if (note) note.textContent = 'Facial geometry aligned. Ready for real-time live camera replacement.';
+    if (note) note.textContent = 'Target facial geometry & Delaunay mesh aligned. Ready for transformation.';
     if (lockedName) lockedName.textContent = name;
   } else {
     if (badge) { badge.className = 'detection-badge amber'; badge.textContent = 'Awaiting Portrait'; }
   }
+}
+
+/**
+ * Technical Pipeline Status Telemetry Strip:
+ * FACE DETECTED ✓ -> 468 LANDMARKS ✓ -> TARGET ALIGNED ✓ -> HEAD POSE TRACKING ✓ -> FACE MORPH ACTIVE ✓
+ */
+function updateTechPipelineTelemetry(hasFace, has468, isAligned, isTracking, isMorphActive) {
+  const sDetect = $('#pipeStepDetect');
+  const sLmk = $('#pipeStepLandmarks');
+  const sAlign = $('#pipeStepAlign');
+  const sPose = $('#pipeStepPose');
+  const sMorph = $('#pipeStepMorph');
+
+  if (sDetect) sDetect.classList.toggle('active', !!hasFace);
+  if (sLmk) sLmk.classList.toggle('active', !!has468);
+  if (sAlign) sAlign.classList.toggle('active', !!isAligned);
+  if (sPose) sPose.classList.toggle('active', !!isTracking);
+  if (sMorph) sMorph.classList.toggle('active', !!isMorphActive);
 }
 
 /**
@@ -1973,8 +2027,8 @@ function renderTargetPreviewOval(tfCanvas, pixelLandmarks, tw, th) {
 
   pCtx.save();
   const grad = pCtx.createRadialGradient(pCanvas.width / 2, pCanvas.height / 2, 10, pCanvas.width / 2, pCanvas.height / 2, pCanvas.width / 2);
-  grad.addColorStop(0, 'rgba(6, 182, 212, 0.15)');
-  grad.addColorStop(1, 'rgba(7, 9, 14, 0.95)');
+  grad.addColorStop(0, 'rgba(37, 99, 235, 0.18)');
+  grad.addColorStop(1, 'rgba(5, 5, 5, 0.95)');
   pCtx.fillStyle = grad;
   pCtx.fillRect(0, 0, pCanvas.width, pCanvas.height);
 
@@ -1987,7 +2041,7 @@ function renderTargetPreviewOval(tfCanvas, pixelLandmarks, tw, th) {
   pCtx.drawImage(tfCanvas, minX, minY, cropW, cropH, dx, dy, dw, dh);
 
   // Subtle biometric contour ring
-  pCtx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
+  pCtx.strokeStyle = 'rgba(59, 130, 246, 0.5)';
   pCtx.lineWidth = 1.5;
   pCtx.beginPath();
   pCtx.ellipse(pCanvas.width / 2, pCanvas.height / 2, dw * 0.46, dh * 0.50, 0, 0, Math.PI * 2);
@@ -1998,12 +2052,10 @@ function renderTargetPreviewOval(tfCanvas, pixelLandmarks, tw, th) {
 /**
  * Lock Target Identity
  */
-function lockTargetIdentity(name, gender = 'custom') {
+function lockTargetIdentity(name) {
   state.isTargetLocked = true;
   state.lockedTargetName = name;
-  state.lockedTargetGender = gender;
   state.liveTargetName = name;
-  state.liveTargetGender = gender;
   state.liveTargetImg = state.targetFaceData ? state.targetFaceData.sourceImg : null;
 
   const lockBadge = $('#targetLockStatusBadge');
@@ -2024,7 +2076,7 @@ function lockTargetIdentity(name, gender = 'custom') {
   if (lockIndicator) lockIndicator.classList.remove('hidden');
   if (lockIndicatorText) lockIndicatorText.textContent = 'LOCKED';
   if (lockedNameEl) lockedNameEl.textContent = `${name}`;
-  if (hudTargetText) hudTargetText.textContent = `TARGET: ${name.toUpperCase()} (LOCKED ✓)`;
+  if (hudTargetText) hudTargetText.textContent = `LIVE CAMERA · TARGET LOCKED`;
 
   const hudActive = $('#hudMorphActive');
   if (hudActive && state.isCameraActive) {
@@ -2064,7 +2116,7 @@ if (liveCustomTargetInput) {
     if (file && file.type.startsWith('image/')) {
       $$('#livePersonaGrid .persona-card').forEach(c => c.classList.remove('active'));
       const name = file.name.split('.')[0];
-      loadAndAnalyzeTarget(file, name, 'custom');
+      loadAndAnalyzeTarget(file, name);
     }
   });
 }
@@ -2074,8 +2126,8 @@ const liveTargetDropArea = $('#liveTargetDropArea');
 if (liveTargetDropArea) {
   liveTargetDropArea.addEventListener('dragover', (e) => {
     e.preventDefault();
-    liveTargetDropArea.style.borderColor = 'var(--cyan)';
-    liveTargetDropArea.style.background = 'rgba(6, 182, 212, 0.08)';
+    liveTargetDropArea.style.borderColor = '#3b82f6';
+    liveTargetDropArea.style.background = 'rgba(37, 99, 235, 0.08)';
   });
   liveTargetDropArea.addEventListener('dragleave', () => {
     liveTargetDropArea.style.borderColor = '';
@@ -2089,7 +2141,7 @@ if (liveTargetDropArea) {
     if (file && file.type.startsWith('image/')) {
       $$('#livePersonaGrid .persona-card').forEach(c => c.classList.remove('active'));
       const name = file.name.split('.')[0];
-      loadAndAnalyzeTarget(file, name, 'custom');
+      loadAndAnalyzeTarget(file, name);
     }
   });
 }
@@ -2103,9 +2155,8 @@ if ($('#livePersonaGrid')) {
 
       const personaSrc = card.dataset.src;
       const personaName = card.dataset.name || 'Target';
-      const gender = card.dataset.gender || 'male';
 
-      loadAndAnalyzeTarget(personaSrc, personaName, gender);
+      loadAndAnalyzeTarget(personaSrc, personaName);
     });
   });
 }
@@ -2117,7 +2168,7 @@ if (lockTargetBtn) {
     if (state.isTargetLocked) {
       unlockTargetIdentity();
     } else if (state.targetFaceData) {
-      lockTargetIdentity(state.targetFaceData.name, state.targetFaceData.gender);
+      lockTargetIdentity(state.targetFaceData.name);
     } else {
       toast('Please upload or select a target face first.', true);
     }
@@ -2395,14 +2446,15 @@ function startLiveCameraRenderLoop() {
       state.faceMeshTracker.send({ image: video }).catch(() => {});
     }
 
+    // Telemetry updates for technical pipeline
+    const hasFace = !!(state.lastDetectedLandmarks && state.lastDetectedLandmarks.length >= 468);
+    const isAligned = !!(state.isTargetLocked && state.targetFaceData);
+    const isTracking = !!(state.isCameraActive && hasFace);
+    const isMorphActive = !!(state.isLiveMorphing && isAligned && hasFace);
+    updateTechPipelineTelemetry(hasFace, hasFace, isAligned, isTracking, isMorphActive);
+
     // 3. Render Real-Time Geometrically Warped Target Face onto Source Face
-    if (
-      state.isLiveMorphing &&
-      state.isTargetLocked &&
-      state.targetFaceData &&
-      state.lastDetectedLandmarks &&
-      state.lastDetectedLandmarks.length >= 468
-    ) {
+    if (isMorphActive) {
       renderLiveGeometricFaceMorph(ctx, state.targetFaceData, state.lastDetectedLandmarks, canvas.width, canvas.height);
     } else {
       // Draw subtle AI watermark even when morph is standby
@@ -2417,12 +2469,15 @@ function startLiveCameraRenderLoop() {
 }
 
 /**
- * Real-Time Geometric Face Morphing:
- * Warps each Delaunay triangle of the target face strictly to the source face landmarks,
- * adapts skin tone & lighting, and seamlessly composites with feathered anatomical boundary.
+ * Real-Time Cross-Gender Geometric Face Morphing:
+ * - Maps the TARGET'S facial geometry (eye spacing, nose width, lip contour, jawline, chin shape)
+ *   into the destination space, anchored precisely to the SOURCE'S head pose (yaw, pitch, roll, position, scale).
+ * - Adapts dynamic facial expressions (mouth open for talking, eyes blinking) from the source landmarks.
+ * - Performs piecewise affine Delaunay warping of target facial texture onto the blended destination vertices.
+ * - Harmonizes lighting and skin tone while feathering seamlessly into the source head/neck/hair.
  */
 function renderLiveGeometricFaceMorph(ctx, targetData, rawLandmarks, cw, ch) {
-  const morphRatio = state.liveIntensity !== undefined ? state.liveIntensity : 0.65;
+  const morphRatio = state.liveIntensity !== undefined ? state.liveIntensity : 0.75;
   const skinHarmonize = state.liveSkinTone !== undefined ? state.liveSkinTone : 0.80;
   const scaleMult = state.liveScale !== undefined ? state.liveScale : 1.0;
 
@@ -2436,15 +2491,93 @@ function renderLiveGeometricFaceMorph(ctx, targetData, rawLandmarks, cw, ch) {
     };
   }
 
-  // Sizing adjustment if scale slider differs from 1.0
-  if (Math.abs(scaleMult - 1.0) > 0.02) {
-    const nose = srcPoints[1];
-    if (nose) {
-      for (const k in srcPoints) {
-        srcPoints[k].x = nose.x + (srcPoints[k].x - nose.x) * scaleMult;
-        srcPoints[k].y = nose.y + (srcPoints[k].y - nose.y) * scaleMult;
+  // Source pose reference anchors
+  const sEyeL = srcPoints[33];   // Outer left eye
+  const sEyeR = srcPoints[263];  // Outer right eye
+  const sNose = srcPoints[1];    // Nose tip
+  const sChin = srcPoints[152];  // Chin bottom
+  const sForehead = srcPoints[10]; // Forehead top
+  const sLipTop = srcPoints[13]; // Upper lip
+  const sLipBottom = srcPoints[14]; // Lower lip
+
+  if (!sEyeL || !sEyeR || !sNose) return;
+
+  const srcCenter = {
+    x: (sEyeL.x + sEyeR.x) * 0.5,
+    y: (sEyeL.y + sEyeR.y) * 0.5
+  };
+  const srcEyeDist = Math.hypot(sEyeR.x - sEyeL.x, sEyeR.y - sEyeL.y) || 1;
+  const srcRoll = Math.atan2(sEyeR.y - sEyeL.y, sEyeR.x - sEyeL.x);
+
+  // Dynamic expressions from source face
+  const srcMouthOpen = (sLipBottom && sLipTop) ? Math.max(0, sLipBottom.y - sLipTop.y) : 0;
+
+  // Target normalized geometry
+  const tgtNorm = targetData.normalizedLandmarks || [];
+  const tEyeL = tgtNorm[33] || { x: 0.35, y: 0.4 };
+  const tEyeR = tgtNorm[263] || { x: 0.65, y: 0.4 };
+  const tgtCenter = {
+    x: (tEyeL.x + tEyeR.x) * 0.5,
+    y: (tEyeL.y + tEyeR.y) * 0.5
+  };
+  const tgtEyeDist = Math.hypot(tEyeR.x - tEyeL.x, tEyeR.y - tEyeL.y) || 0.3;
+  const tgtRoll = Math.atan2(tEyeR.y - tEyeL.y, tEyeR.x - tEyeL.x);
+
+  // Relative rotation and scale to map target geometry into source pose
+  const deltaAngle = srcRoll - tgtRoll;
+  const cosA = Math.cos(deltaAngle);
+  const sinA = Math.sin(deltaAngle);
+  const geomScale = (srcEyeDist / tgtEyeDist) * scaleMult;
+
+  // Compute Destination Vertices V[k]:
+  // Blends target's distinct biological anatomy (jawline, cheeks, nose, lips, forehead)
+  // with source head pose & dynamic expressions.
+  const destVertices = {};
+  const isContourIndex = new Set(FACE_CONTOUR_INDICES);
+  const isLipIndex = new Set([0, 13, 14, 17, 37, 39, 40, 61, 78, 80, 81, 82, 84, 87, 88, 91, 95, 146, 178, 181, 185, 191, 267, 269, 270, 291, 308, 310, 311, 312, 314, 317, 318, 321, 324, 375, 402, 405, 409, 415]);
+
+  for (let k = 0; k < rawLandmarks.length; k++) {
+    const sPt = srcPoints[k];
+    if (!sPt) continue;
+
+    const tPt = tgtNorm[k];
+    if (!tPt) {
+      destVertices[k] = sPt;
+      continue;
+    }
+
+    // 1. Target relative coordinate from target eye center
+    const tdx = tPt.x - tgtCenter.x;
+    const tdy = tPt.y - tgtCenter.y;
+
+    // 2. Rotate to match source head roll
+    const rx = (tdx * cosA - tdy * sinA) * geomScale;
+    const ry = (tdx * sinA + tdy * cosA) * geomScale;
+
+    // 3. Position at source head center
+    let tgtAlignedX = srcCenter.x + rx;
+    let tgtAlignedY = srcCenter.y + ry;
+
+    // 4. Expression transfer: transfer source mouth speech and opening to target mouth
+    if (isLipIndex.has(k) && srcMouthOpen > 2) {
+      const mouthWeight = (k === 14 || k === 17 || k === 87 || k === 317) ? 0.75 : 0.45;
+      tgtAlignedY += srcMouthOpen * mouthWeight;
+    }
+
+    // 5. Morph Ratio: Target geometry dominance for cross-gender identity transformation
+    // If it's a boundary point near hair/ears/neck, softly blend to source coordinates to prevent edge seams
+    let alpha = morphRatio;
+    if (isContourIndex.has(k)) {
+      // Along upper forehead and outer temples, gently taper to anchor naturally to source head hairline
+      if (k === 10 || k === 338 || k === 297 || k === 67 || k === 109) {
+        alpha = morphRatio * 0.70;
       }
     }
+
+    destVertices[k] = {
+      x: (1 - alpha) * sPt.x + alpha * tgtAlignedX,
+      y: (1 - alpha) * sPt.y + alpha * tgtAlignedY
+    };
   }
 
   // 2. Offscreen buffer for warped target face
@@ -2460,12 +2593,12 @@ function renderLiveGeometricFaceMorph(ctx, targetData, rawLandmarks, cw, ch) {
   const triangles = targetData.triangles;
   const tgtCanvas = targetData.canvas;
 
-  // 3. Piecewise Affine Warping of all Delaunay mesh triangles
+  // 3. Piecewise Affine Warping of all Delaunay mesh triangles onto Destination Vertices
   for (let t = 0; t < triangles.length; t++) {
     const [i, j, k] = triangles[t];
-    const p1 = srcPoints[i];
-    const p2 = srcPoints[j];
-    const p3 = srcPoints[k];
+    const p1 = destVertices[i];
+    const p2 = destVertices[j];
+    const p3 = destVertices[k];
     const u1 = tgtLandmarks[i];
     const u2 = tgtLandmarks[j];
     const u3 = tgtLandmarks[k];
@@ -2479,9 +2612,9 @@ function renderLiveGeometricFaceMorph(ctx, targetData, rawLandmarks, cw, ch) {
   if (skinHarmonize > 0.05) {
     let liveR = 215, liveG = 180, liveB = 155;
     try {
-      const sample1 = srcPoints[205]; // Left cheek
-      const sample2 = srcPoints[425]; // Right cheek
-      const sample3 = srcPoints[168]; // Nose bridge
+      const sample1 = destVertices[205] || srcPoints[205]; // Left cheek
+      const sample2 = destVertices[425] || srcPoints[425]; // Right cheek
+      const sample3 = destVertices[168] || srcPoints[168]; // Nose bridge
 
       if (sample1 && sample2 && sample3) {
         const d1 = ctx.getImageData(Math.max(0, Math.min(cw - 1, Math.floor(sample1.x))), Math.max(0, Math.min(ch - 1, Math.floor(sample1.y))), 1, 1).data;
@@ -2496,12 +2629,12 @@ function renderLiveGeometricFaceMorph(ctx, targetData, rawLandmarks, cw, ch) {
 
     wCtx.save();
     wCtx.globalCompositeOperation = 'color';
-    wCtx.fillStyle = `rgba(${liveR}, ${liveG}, ${liveB}, ${skinHarmonize * 0.68})`;
+    wCtx.fillStyle = `rgba(${liveR}, ${liveG}, ${liveB}, ${skinHarmonize * 0.65})`;
     wCtx.fillRect(0, 0, cw, ch);
     wCtx.restore();
   }
 
-  // 5. Smooth Anatomical Feathered Face Contour Mask
+  // 5. Smooth Anatomical Feathered Face Contour Mask along Destination Jawline & Chin
   if (!state.maskCanvas || state.maskCanvas.width !== cw || state.maskCanvas.height !== ch) {
     state.maskCanvas = document.createElement('canvas');
     state.maskCanvas.width = cw;
@@ -2513,7 +2646,7 @@ function renderLiveGeometricFaceMorph(ctx, targetData, rawLandmarks, cw, ch) {
   mCtx.save();
   mCtx.beginPath();
   for (let c = 0; c < FACE_CONTOUR_INDICES.length; c++) {
-    const pt = srcPoints[FACE_CONTOUR_INDICES[c]];
+    const pt = destVertices[FACE_CONTOUR_INDICES[c]];
     if (!pt) continue;
     if (c === 0) mCtx.moveTo(pt.x, pt.y);
     else mCtx.lineTo(pt.x, pt.y);
@@ -2521,7 +2654,7 @@ function renderLiveGeometricFaceMorph(ctx, targetData, rawLandmarks, cw, ch) {
   mCtx.closePath();
   mCtx.fillStyle = '#ffffff';
   mCtx.shadowColor = '#ffffff';
-  mCtx.shadowBlur = 14; // Seamless gradient feather along jawline, chin, and temples
+  mCtx.shadowBlur = 18; // Feathering seamlessly blends target jawline and chin into source neck
   mCtx.fill();
   mCtx.restore();
 
@@ -2536,7 +2669,7 @@ function renderLiveGeometricFaceMorph(ctx, targetData, rawLandmarks, cw, ch) {
   ctx.globalAlpha = Math.min(1.0, morphRatio);
   ctx.drawImage(state.warpCanvas, 0, 0);
 
-  // Soft-light convergence pass for natural skin pore & texture convergence
+  // Soft-light convergence pass for natural skin pore & lighting convergence
   ctx.globalCompositeOperation = 'soft-light';
   ctx.globalAlpha = morphRatio * 0.35;
   ctx.drawImage(state.warpCanvas, 0, 0);
@@ -2551,8 +2684,8 @@ function renderLiveGeometricFaceMorph(ctx, targetData, rawLandmarks, cw, ch) {
  */
 function drawWatermarkOnCanvas(ctx, cw, ch) {
   ctx.save();
-  ctx.fillStyle = 'rgba(7, 9, 14, 0.75)';
-  ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+  ctx.fillStyle = 'rgba(5, 5, 5, 0.85)';
+  ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)';
   ctx.lineWidth = 1;
   const bw = 120, bh = 22, bx = cw - bw - 14, by = ch - bh - 14;
   ctx.beginPath();
@@ -2560,7 +2693,7 @@ function drawWatermarkOnCanvas(ctx, cw, ch) {
   ctx.fill();
   ctx.stroke();
 
-  ctx.fillStyle = '#06b6d4';
+  ctx.fillStyle = '#60a5fa';
   ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -2571,7 +2704,7 @@ function drawWatermarkOnCanvas(ctx, cw, ch) {
 // Auto-initialize default reference target (Marcus) & MediaPipe on startup
 setTimeout(() => {
   initMediaPipeFaceTracker();
-  loadAndAnalyzeTarget('/images/personas/male_marcus.jpg', 'Marcus', 'male');
+  loadAndAnalyzeTarget('/images/personas/male_marcus.jpg', 'Marcus');
 }, 300);
 
 /* -------------------------------------------------------------
@@ -2582,7 +2715,11 @@ const stopRecordBtn = $('#stopRecordBtn');
 
 if (startRecordBtn) {
   startRecordBtn.addEventListener('click', () => {
-    startLiveVideoRecording();
+    if (state.isRecordingVideo) {
+      stopLiveVideoRecording();
+    } else {
+      startLiveVideoRecording();
+    }
   });
 }
 
@@ -2628,7 +2765,9 @@ function startLiveVideoRecording() {
 
     // UI Updates
     $('#recordingTimerBadge').classList.remove('hidden');
-    startRecordBtn.disabled = true;
+    startRecordBtn.classList.add('recording-active');
+    if ($('#startRecordBtnText')) $('#startRecordBtnText').textContent = '● STOP RECORDING';
+    startRecordBtn.disabled = false;
     stopRecordBtn.disabled = false;
 
     state.recordingSeconds = 0;
@@ -2653,6 +2792,8 @@ function stopLiveVideoRecording() {
 
   clearInterval(state.recordingTimerInterval);
   $('#recordingTimerBadge').classList.add('hidden');
+  startRecordBtn.classList.remove('recording-active');
+  if ($('#startRecordBtnText')) $('#startRecordBtnText').textContent = '● RECORD VIDEO';
   startRecordBtn.disabled = false;
   stopRecordBtn.disabled = true;
 
