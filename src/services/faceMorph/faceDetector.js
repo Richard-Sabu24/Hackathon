@@ -116,13 +116,16 @@ class FaceDetector {
         }
       }
 
-      // Check for multiple prominent separated face clusters
-      if (leftClusterCount > totalSkinPixels * 0.28 && rightClusterCount > totalSkinPixels * 0.28) {
-        return {
-          detected: false,
-          faceCount: 2,
-          reason: 'Multiple faces detected. Please provide an image with one clearly visible primary face.'
-        };
+      // Check for multiple prominent separated face clusters and select primary face
+      let faceCount = 1;
+      if (leftClusterCount > totalSkinPixels * 0.25 && rightClusterCount > totalSkinPixels * 0.25) {
+        faceCount = 2;
+        // Automatically select the primary (larger) face cluster
+        if (leftClusterCount >= rightClusterCount) {
+          maxX = Math.min(maxX, Math.round(meanX));
+        } else {
+          minX = Math.max(minX, Math.round(meanX));
+        }
       }
 
       const boxW = Math.max(20, maxX - minX);
@@ -200,14 +203,29 @@ class FaceDetector {
       };
 
       const confidence = Math.min(0.98, Math.max(0.72, 0.65 + skinRatio * 0.8));
+      const eyeL = landmarks.leftEye;
+      const eyeR = landmarks.rightEye;
+      const dx = eyeR.x - eyeL.x;
+      const dy = eyeR.y - eyeL.y;
+      const eyeDist = Math.hypot(dx, dy);
+      const rollRad = Math.atan2(dy, dx);
+      const rollDeg = rollRad * (180 / Math.PI);
+      const eyeCenter = { x: (eyeL.x + eyeR.x) * 0.5, y: (eyeL.y + eyeR.y) * 0.5 };
 
       return {
         detected: true,
-        faceCount: 1,
+        faceCount,
         confidence: Number(confidence.toFixed(2)),
         resolution: { width: origW, height: origH },
         bbox: origBbox,
-        landmarks
+        landmarks,
+        orientation: {
+          rollRad,
+          rollDeg,
+          eyeDist,
+          eyeCenter,
+          faceCenter: { x: fcX, y: fcY }
+        }
       };
 
     } catch (error) {

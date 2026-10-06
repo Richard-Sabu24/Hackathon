@@ -411,7 +411,17 @@ function resetSourceInput() {
   state.sourceImg = null;
   state.sourceLandmarks = null;
   state.sourceFaceBox = null;
+  state.sourceDetection = null;
+  state.sourceOrientation = null;
   sourceInput.value = '';
+
+  const box = $('#sourceFaceBox');
+  if (box) box.classList.add('hidden');
+  const canvas = $('#sourceLandmarkCanvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
   $('#sourceEmptyState').classList.remove('hidden');
   $('#sourcePreviewState').classList.add('hidden');
@@ -450,33 +460,64 @@ async function handleSourceFile(file) {
 
   img.onload = async () => {
     state.sourceImg = img;
-    $('#sourcePreviewImg').src = objectUrl;
+    const previewImg = $('#sourcePreviewImg');
+    previewImg.src = objectUrl;
     $('#sourceMetaDetails').textContent = `${img.naturalWidth} × ${img.naturalHeight} · ${formatBytes(file.size)}`;
 
     $('#sourceEmptyState').classList.add('hidden');
     $('#sourcePreviewState').classList.remove('hidden');
 
     // Run Face Validation Check
-    setSourceStatus(false, 'Detecting face...');
+    setSourceStatus(false, 'Scanning image for faces...');
     $('#sourceValidationBox').classList.remove('hidden');
-    $('#sourceValidationText').textContent = 'Analyzing image geometry & facial landmarks...';
+    $('#sourceValidationBox').className = 'validation-notice-box';
+    $('#sourceValidationText').textContent = 'Scanning full image geometry & locating primary face...';
 
     const detection = await validateFaceLocally(img);
     if (detection.detected) {
+      state.sourceDetection = detection;
       state.sourceLandmarks = detection.landmarks;
       state.sourceFaceBox = detection.bbox;
+      state.sourceOrientation = detection.orientation;
 
-      setSourceStatus(true, 'Face Detected ✓ (98% Conf)');
+      const confPct = Math.round((detection.confidence || 0.98) * 100);
+      const faceCountMsg = (detection.faceCount && detection.faceCount > 1)
+        ? ` (${detection.faceCount} faces detected, primary selected)`
+        : '';
+      setSourceStatus(true, `Face Detected ✓ (${confPct}% Conf)`);
       $('#sourceValidationBox').className = 'validation-notice-box';
-      $('#sourceValidationText').textContent = 'Primary face verified with 468 landmark contours mapped.';
+      $('#sourceValidationText').textContent = `Primary face aligned: ${confPct}% confidence${faceCountMsg}. Full landmark contours mapped.`;
 
-      // Draw biometric overlay on source canvas
-      drawFaceOverlay($('#sourceLandmarkCanvas'), img, detection.bbox, detection.landmarks);
+      // Draw biometric overlay on source canvas & position bounding box
+      const triggerDraw = () => {
+        drawFaceOverlay(
+          $('#sourcePreviewState .image-stage-wrap'),
+          $('#sourceLandmarkCanvas'),
+          $('#sourceFaceBox'),
+          previewImg,
+          detection
+        );
+      };
+      requestAnimationFrame(triggerDraw);
+      setTimeout(triggerDraw, 80);
     } else {
+      state.sourceDetection = null;
+      state.sourceLandmarks = null;
+      state.sourceFaceBox = null;
+      state.sourceOrientation = null;
+
+      const box = $('#sourceFaceBox');
+      if (box) box.classList.add('hidden');
+      const canvas = $('#sourceLandmarkCanvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
       setSourceStatus(false, 'No Face Detected', true);
       $('#sourceValidationBox').className = 'validation-notice-box error';
-      $('#sourceValidationText').textContent = detection.reason;
-      toast(detection.reason, true);
+      $('#sourceValidationText').textContent = detection.reason || 'No face detected in the image. Please upload a clear photo.';
+      toast(detection.reason || 'No face detected in the image.', true);
     }
 
     checkMorphReady();
@@ -491,6 +532,20 @@ if ($('#targetBrowseBtn')) $('#targetBrowseBtn').addEventListener('click', () =>
 if ($('#targetReplaceBtn')) $('#targetReplaceBtn').addEventListener('click', () => targetInput.click());
 if ($('#targetRemoveBtn')) {
   $('#targetRemoveBtn').addEventListener('click', () => {
+    state.targetFile = null;
+    state.targetDetection = null;
+    state.targetLandmarks = null;
+    state.targetFaceBox = null;
+    state.targetOrientation = null;
+
+    const box = $('#targetFaceBox');
+    if (box) box.classList.add('hidden');
+    const canvas = $('#targetLandmarkCanvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
     // Reset to first preset
     const firstPersona = $('#personaGrid .persona-card');
     if (firstPersona) firstPersona.click();
@@ -523,7 +578,8 @@ async function handleTargetFile(file) {
 
     $('#targetEmptyState').classList.add('hidden');
     $('#targetPreviewState').classList.remove('hidden');
-    $('#targetPreviewImg').src = objectUrl;
+    const previewImg = $('#targetPreviewImg');
+    previewImg.src = objectUrl;
     $('#targetFileName').textContent = file.name;
     $('#targetMetaDetails').textContent = `${img.naturalWidth} × ${img.naturalHeight} · ${formatBytes(file.size)}`;
 
@@ -531,20 +587,52 @@ async function handleTargetFile(file) {
       $('#targetBadgeLabel').textContent = `${state.targetPersonaName.toUpperCase()} (100%)`;
     }
 
-    setTargetStatus(false, 'Validating target face...');
+    setTargetStatus(false, 'Scanning target face...');
+    $('#targetValidationBox').classList.remove('hidden');
+    $('#targetValidationBox').className = 'validation-notice-box';
+    $('#targetValidationText').textContent = 'Analyzing target facial geometry & landmarks...';
+
     const detection = await validateFaceLocally(img);
     if (detection.detected) {
+      state.targetDetection = detection;
       state.targetLandmarks = detection.landmarks;
       state.targetFaceBox = detection.bbox;
-      setTargetStatus(true, 'Target Face Ready ✓');
+      state.targetOrientation = detection.orientation;
+
+      const confPct = Math.round((detection.confidence || 0.98) * 100);
+      setTargetStatus(true, `Target Face Ready ✓ (${confPct}%)`);
       $('#targetValidationBox').className = 'validation-notice-box';
-      $('#targetValidationText').textContent = 'Custom target face verified for geometric warping.';
-      drawFaceOverlay($('#targetLandmarkCanvas'), img, detection.bbox, detection.landmarks);
+      $('#targetValidationText').textContent = `Custom target face aligned and verified for geometric morphing (${confPct}% conf).`;
+
+      const triggerDraw = () => {
+        drawFaceOverlay(
+          $('#targetPreviewState .image-stage-wrap'),
+          $('#targetLandmarkCanvas'),
+          $('#targetFaceBox'),
+          previewImg,
+          detection
+        );
+      };
+      requestAnimationFrame(triggerDraw);
+      setTimeout(triggerDraw, 80);
     } else {
+      state.targetDetection = null;
+      state.targetLandmarks = null;
+      state.targetFaceBox = null;
+      state.targetOrientation = null;
+
+      const box = $('#targetFaceBox');
+      if (box) box.classList.add('hidden');
+      const canvas = $('#targetLandmarkCanvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
       setTargetStatus(false, 'Invalid Target Face', true);
       $('#targetValidationBox').className = 'validation-notice-box error';
-      $('#targetValidationText').textContent = detection.reason;
-      toast(detection.reason, true);
+      $('#targetValidationText').textContent = detection.reason || 'No face detected in target image.';
+      toast(detection.reason || 'No face detected in target image.', true);
     }
 
     checkMorphReady();
@@ -555,71 +643,282 @@ async function handleTargetFile(file) {
 
 // Client-side Face Validation & Geometric Estimation
 async function validateFaceLocally(img) {
-  const w = img.naturalWidth || 600;
-  const h = img.naturalHeight || 800;
+  const origW = img.naturalWidth || img.width;
+  const origH = img.naturalHeight || img.height;
 
-  if (w < 100 || h < 100) {
+  if (!origW || !origH || origW < 80 || origH < 80) {
     return {
       detected: false,
-      reason: 'Image resolution too small. Please use an image of at least 150×150 pixels.'
+      faceCount: 0,
+      reason: 'Image resolution too small. Please use an image of at least 120×120 pixels.'
     };
   }
 
-  // Sample center facial ROI
-  const cx = w * 0.50;
-  const cy = h * 0.45;
-  const fw = w * 0.46;
-  const fh = h * 0.56;
+  // 1. Run dynamic client-side detector (MediaPipe FaceMesh with multi-face detection & fallback CV)
+  if (typeof FaceMorphEngine !== 'undefined' && FaceMorphEngine.ImageFaceDetector) {
+    try {
+      const result = await FaceMorphEngine.ImageFaceDetector.detect(img);
+      if (result && result.detected) {
+        return result;
+      }
+    } catch (e) {
+      console.warn('FaceMorphEngine detector notice:', e);
+    }
+  }
 
-  const bbox = {
-    x: Math.round(cx - fw * 0.5),
-    y: Math.round(cy - fh * 0.5),
-    width: Math.round(fw),
-    height: Math.round(fh)
-  };
+  // 2. Fallback to server-side computer vision detection if client detector found no face
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.min(800, origW);
+    canvas.height = Math.round(canvas.width * (origH / origW));
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
 
-  const landmarks = {
-    leftEye: { x: Math.round(cx - fw * 0.20), y: Math.round(cy - fh * 0.14) },
-    rightEye: { x: Math.round(cx + fw * 0.20), y: Math.round(cy - fh * 0.14) },
-    nose: { x: Math.round(cx), y: Math.round(cy + fh * 0.05) },
-    mouth: { x: Math.round(cx), y: Math.round(cy + fh * 0.24) },
-    chin: { x: Math.round(cx), y: Math.round(cy + fh * 0.45) }
-  };
+    const res = await fetch('/api/face/detect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: dataUrl })
+    });
+    const json = await res.json();
+    if (json && json.success && json.data && json.data.detected) {
+      const scaleX = origW / canvas.width;
+      const scaleY = origH / canvas.height;
+      const serverData = json.data;
+      const scaledBbox = {
+        x: Math.round(serverData.bbox.x * scaleX),
+        y: Math.round(serverData.bbox.y * scaleY),
+        width: Math.round(serverData.bbox.width * scaleX),
+        height: Math.round(serverData.bbox.height * scaleY)
+      };
+      const scaledLandmarks = {};
+      if (serverData.landmarks) {
+        Object.keys(serverData.landmarks).forEach(k => {
+          const pt = serverData.landmarks[k];
+          if (pt && typeof pt.x === 'number') {
+            scaledLandmarks[k] = { x: Math.round(pt.x * scaleX), y: Math.round(pt.y * scaleY) };
+          }
+        });
+      }
+      return {
+        detected: true,
+        faceCount: serverData.faceCount || 1,
+        confidence: serverData.confidence || 0.95,
+        bbox: scaledBbox,
+        landmarks: scaledLandmarks,
+        orientation: serverData.orientation || {
+          rollRad: 0,
+          rollDeg: 0,
+          eyeDist: scaledBbox.width * 0.4,
+          faceCenter: { x: scaledBbox.x + scaledBbox.width * 0.5, y: scaledBbox.y + scaledBbox.height * 0.5 }
+        },
+        keypoints: serverData.landmarks
+      };
+    }
+  } catch (err) {
+    console.warn('Server face detection fallback warning:', err);
+  }
 
   return {
-    detected: true,
-    bbox,
-    landmarks
+    detected: false,
+    faceCount: 0,
+    reason: 'No face detected in the image. Please upload a clear photo with a visible face.'
   };
 }
 
-// Draw visual landmark points and HUD corners on preview canvas
-function drawFaceOverlay(canvas, img, bbox, landmarks) {
-  if (!canvas || !img) return;
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
+// Draw visual landmark points and HUD corners on preview canvas with coordinate conversion
+function drawFaceOverlay(stageWrap, canvas, boxEl, img, detection) {
+  if (!stageWrap && canvas) {
+    stageWrap = canvas.closest('.image-stage-wrap');
+  }
+  if (!stageWrap || !canvas || !img || !detection) return;
+
+  if (!detection.detected) {
+    if (boxEl) boxEl.classList.add('hidden');
+    const ctx = canvas.getContext('2d');
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
+
+  const stageRect = stageWrap.getBoundingClientRect();
+  const imgRect = img.getBoundingClientRect();
+
+  if (stageRect.width === 0 || stageRect.height === 0 || imgRect.width === 0 || imgRect.height === 0) {
+    return;
+  }
+
+  const origW = img.naturalWidth || img.width;
+  const origH = img.naturalHeight || img.height;
+  if (!origW || !origH) return;
+
+  // Exact displayed position and dimensions of the <img> element relative to stageWrap
+  const offsetLeft = imgRect.left - stageRect.left;
+  const offsetTop = imgRect.top - stageRect.top;
+  const dispW = imgRect.width;
+  const dispH = imgRect.height;
+  const scaleX = dispW / origW;
+  const scaleY = dispH / origH;
+
+  // Set canvas size to match the stageWrap container
+  canvas.width = Math.round(stageRect.width);
+  canvas.height = Math.round(stageRect.height);
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Subtle cyan bounding box
-  ctx.strokeStyle = '#06b6d4';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
+  const bbox = detection.bbox;
+  if (bbox && boxEl) {
+    const boxLeft = Math.round(offsetLeft + bbox.x * scaleX);
+    const boxTop = Math.round(offsetTop + bbox.y * scaleY);
+    const boxWidth = Math.round(bbox.width * scaleX);
+    const boxHeight = Math.round(bbox.height * scaleY);
 
-  // Draw keypoint dots
-  ctx.fillStyle = '#06b6d4';
+    boxEl.style.left = `${boxLeft}px`;
+    boxEl.style.top = `${boxTop}px`;
+    boxEl.style.width = `${boxWidth}px`;
+    boxEl.style.height = `${boxHeight}px`;
+    boxEl.style.transformOrigin = 'center center';
+
+    const rollDeg = (detection.orientation && typeof detection.orientation.rollDeg === 'number')
+      ? detection.orientation.rollDeg
+      : 0;
+    boxEl.style.transform = Math.abs(rollDeg) > 0.8 ? `rotate(${rollDeg.toFixed(2)}deg)` : 'none';
+    boxEl.classList.remove('hidden');
+
+    const tag = boxEl.querySelector('.face-box-tag');
+    if (tag) {
+      if (boxEl.id === 'targetFaceBox') {
+        tag.textContent = 'TARGET FACE';
+      } else if (detection.faceCount && detection.faceCount > 1) {
+        tag.textContent = `PRIMARY FACE (1 of ${detection.faceCount})`;
+      } else {
+        tag.textContent = 'PRIMARY FACE';
+      }
+    }
+  }
+
+  // Draw facial landmark contours & keypoints on canvas
+  const landmarks = detection.landmarks;
   if (landmarks) {
-    [landmarks.leftEye, landmarks.rightEye, landmarks.nose, landmarks.mouth, landmarks.chin].forEach(pt => {
-      if (pt) {
+    const toScreen = (pt) => {
+      if (!pt) return null;
+      return {
+        x: offsetLeft + pt.x * scaleX,
+        y: offsetTop + pt.y * scaleY
+      };
+    };
+
+    const drawContourPath = (indices, strokeStyle, lineWidth, close = false) => {
+      ctx.beginPath();
+      let started = false;
+      for (let i = 0; i < indices.length; i++) {
+        const pt = toScreen(landmarks[indices[i]]);
+        if (pt) {
+          if (!started) {
+            ctx.moveTo(pt.x, pt.y);
+            started = true;
+          } else {
+            ctx.lineTo(pt.x, pt.y);
+          }
+        }
+      }
+      if (close) ctx.closePath();
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth = lineWidth;
+      ctx.stroke();
+    };
+
+    // Standard FaceMesh anatomical contours
+    const faceContourIdx = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10];
+    const rightEyebrowIdx = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
+    const leftEyebrowIdx = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
+    const rightEyeIdx = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33];
+    const leftEyeIdx = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466, 263];
+    const noseIdx = [168, 6, 197, 195, 5, 4, 1, 19, 94, 2];
+    const lipsOuterIdx = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 409, 270, 269, 267, 0, 37, 39, 40, 185, 61];
+
+    if (landmarks[10] && landmarks[152]) {
+      drawContourPath(faceContourIdx, 'rgba(6, 182, 212, 0.45)', 1.5, true);
+      drawContourPath(rightEyebrowIdx, 'rgba(56, 189, 248, 0.70)', 1.5);
+      drawContourPath(leftEyebrowIdx, 'rgba(56, 189, 248, 0.70)', 1.5);
+      drawContourPath(rightEyeIdx, 'rgba(56, 189, 248, 0.85)', 1.5, true);
+      drawContourPath(leftEyeIdx, 'rgba(56, 189, 248, 0.85)', 1.5, true);
+      drawContourPath(noseIdx, 'rgba(56, 189, 248, 0.65)', 1.5);
+      drawContourPath(lipsOuterIdx, 'rgba(56, 189, 248, 0.75)', 1.5, true);
+    }
+
+    // Keypoint dots (pupils, nose tip, mouth, chin)
+    const keypoints = detection.keypoints || {
+      leftEye: landmarks[33] || landmarks.leftEye,
+      rightEye: landmarks[263] || landmarks.rightEye,
+      nose: landmarks[1] || landmarks.nose,
+      mouth: landmarks[13] || landmarks.mouth,
+      chin: landmarks[152] || landmarks.chin
+    };
+
+    [keypoints.leftEye, keypoints.rightEye, keypoints.nose, keypoints.mouth, keypoints.chin].forEach((pt) => {
+      const scr = toScreen(pt);
+      if (scr) {
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+        ctx.arc(scr.x, scr.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#38bdf8';
         ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       }
     });
+
+    // Eye alignment axis line
+    if (keypoints.leftEye && keypoints.rightEye) {
+      const p1 = toScreen(keypoints.leftEye);
+      const p2 = toScreen(keypoints.rightEye);
+      if (p1 && p2) {
+        ctx.beginPath();
+        ctx.setLineDash([3, 3]);
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
   }
+}
+
+// Window Resize & Container Observer for Dynamic Overlay Re-alignment
+function updateOverlays() {
+  if (state.sourceImg && state.sourceDetection) {
+    const stageWrap = $('#sourcePreviewState .image-stage-wrap');
+    const canvas = $('#sourceLandmarkCanvas');
+    const box = $('#sourceFaceBox');
+    const img = $('#sourcePreviewImg');
+    if (stageWrap && canvas && box && img) {
+      drawFaceOverlay(stageWrap, canvas, box, img, state.sourceDetection);
+    }
+  }
+
+  if (state.targetImg && state.targetDetection) {
+    const stageWrap = $('#targetPreviewState .image-stage-wrap');
+    const canvas = $('#targetLandmarkCanvas');
+    const box = $('#targetFaceBox');
+    const img = $('#targetPreviewImg');
+    if (stageWrap && canvas && box && img) {
+      drawFaceOverlay(stageWrap, canvas, box, img, state.targetDetection);
+    }
+  }
+}
+
+window.addEventListener('resize', updateOverlays);
+
+if (typeof ResizeObserver !== 'undefined') {
+  const ro = new ResizeObserver(() => {
+    updateOverlays();
+  });
+  const sourceStage = $('#sourcePreviewState .image-stage-wrap');
+  if (sourceStage) ro.observe(sourceStage);
+  const targetStage = $('#targetPreviewState .image-stage-wrap');
+  if (targetStage) ro.observe(targetStage);
 }
 
 // Morph Slider Inputs
