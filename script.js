@@ -6,6 +6,15 @@
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 
+// Unified Real-Time Non-Rigid Face Morph Engine Instance
+let globalMorphEngine = null;
+function getMorphEngine() {
+  if (!globalMorphEngine && typeof FaceMorphEngine !== 'undefined' && FaceMorphEngine.FaceMorphEngine) {
+    globalMorphEngine = new FaceMorphEngine.FaceMorphEngine();
+  }
+  return globalMorphEngine;
+}
+
 // Application Global State
 const state = {
   // Navigation & Session
@@ -782,176 +791,63 @@ function displayMorphResult(resultData) {
   addProject('IMAGE', `Face Morph: Source → ${state.targetPersonaName}`, resultUrl);
 }
 
-// High Quality Holistic Face Identity Transfer Generator (Unified Projection + Biological Contour Blend)
+// High Quality True Non-Rigid Geometric Face Morphing (Delaunay Triangulation + Mesh Warping + Biological Contour Blend)
 function generateLocalMorphCanvas() {
   const src = state.sourceImg;
   const tgt = state.targetImg;
-  const canvas = document.createElement('canvas');
   const w = src.naturalWidth || 800;
   const h = src.naturalHeight || 1000;
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d');
 
-  // Step 1: Draw base source composition
-  ctx.drawImage(src, 0, 0, w, h);
-
-  // Step 2: Extract or compute facial geometry coordinates
-  const sBox = state.sourceFaceBox || { x: w * 0.25, y: h * 0.15, width: w * 0.5, height: h * 0.6 };
-
-  // Calculate source facial keypoints scaled from proportions
-  const srcLandmarks = {};
-  const baseProportions = generateFallbackLandmarks(w, h);
-  for (let k = 0; k < baseProportions.length; k++) {
-    srcLandmarks[k] = {
-      x: sBox.x + (baseProportions[k].x - 0.25) * (sBox.width / 0.5),
-      y: sBox.y + (baseProportions[k].y - 0.18) * (sBox.height / 0.66)
-    };
+  // Extract or compute source facial landmarks
+  let sLandmarks = state.sourceLandmarks;
+  if (!sLandmarks || Object.keys(sLandmarks).length < 20) {
+    const sBox = state.sourceFaceBox || { x: w * 0.25, y: h * 0.15, width: w * 0.5, height: h * 0.6 };
+    sLandmarks = {};
+    const baseProportions = generateFallbackLandmarks(w, h);
+    for (let k = 0; k < baseProportions.length; k++) {
+      sLandmarks[k] = {
+        x: sBox.x + (baseProportions[k].x - 0.25) * (sBox.width / 0.5),
+        y: sBox.y + (baseProportions[k].y - 0.18) * (sBox.height / 0.66)
+      };
+    }
   }
 
-  // Ensure target data is available
-  let targetData = state.targetFaceData;
-  if (!targetData || targetData.sourceImg !== tgt) {
+  // Extract or compute target facial landmarks
+  let tLandmarks = state.targetLandmarks;
+  if (!tLandmarks && state.targetFaceData) {
+    tLandmarks = state.targetFaceData.pixelLandmarks;
+  }
+  if (!tLandmarks || Object.keys(tLandmarks).length < 20) {
     const tw = tgt.naturalWidth || 800;
     const th = tgt.naturalHeight || 1000;
-    const tfCanvas = document.createElement('canvas');
-    tfCanvas.width = tw;
-    tfCanvas.height = th;
-    const tfCtx = tfCanvas.getContext('2d');
-
-    const tgtLmk = generateFallbackLandmarks(tw, th);
-    const pixelTgtLmk = {};
-    for (let i = 0; i < tgtLmk.length; i++) {
-      pixelTgtLmk[i] = { x: tgtLmk[i].x * tw, y: tgtLmk[i].y * th };
+    tLandmarks = {};
+    const baseProportions = generateFallbackLandmarks(tw, th);
+    for (let k = 0; k < baseProportions.length; k++) {
+      tLandmarks[k] = {
+        x: baseProportions[k].x * tw,
+        y: baseProportions[k].y * th
+      };
     }
+  }
 
-    tfCtx.save();
-    tfCtx.beginPath();
-    FACE_CONTOUR_INDICES.forEach((idx, i) => {
-      const pt = pixelTgtLmk[idx];
-      if (pt) {
-        if (i === 0) tfCtx.moveTo(pt.x, pt.y);
-        else tfCtx.lineTo(pt.x, pt.y);
-      }
+  const engine = getMorphEngine();
+  let canvas;
+  if (engine) {
+    canvas = engine.morphStaticImages(src, tgt, sLandmarks, tLandmarks, {
+      morphRatio: state.morphRatio !== undefined ? state.morphRatio : 0.65,
+      skinHarmonize: state.skinHarmonize !== undefined ? state.skinHarmonize : 0.85
     });
-    tfCtx.closePath();
-    tfCtx.clip();
-    tfCtx.drawImage(tgt, 0, 0);
-    tfCtx.restore();
-
-    targetData = {
-      canvas: tfCanvas,
-      pixelLandmarks: pixelTgtLmk,
-      width: tw,
-      height: th
-    };
+  } else {
+    canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(src, 0, 0, w, h);
   }
 
-  // Step 3: Target identity driven holistic alignment (Source Head Pose + Target Complete Identity)
-  const sEyeL = srcLandmarks[33];
-  const sEyeR = srcLandmarks[263];
-  const srcCenter = { x: (sEyeL.x + sEyeR.x) * 0.5, y: (sEyeL.y + sEyeR.y) * 0.5 };
-  const srcEyeDist = Math.hypot(sEyeR.x - sEyeL.x, sEyeR.y - sEyeL.y) || 1;
-  const srcRoll = Math.atan2(sEyeR.y - sEyeL.y, sEyeR.x - sEyeL.x);
-
-  const tEyeL = targetData.pixelLandmarks[33] || { x: (targetData.width || 800) * 0.35, y: (targetData.height || 1000) * 0.4 };
-  const tEyeR = targetData.pixelLandmarks[263] || { x: (targetData.width || 800) * 0.65, y: (targetData.height || 1000) * 0.4 };
-  const tgtCenter = { x: (tEyeL.x + tEyeR.x) * 0.5, y: (tEyeL.y + tEyeR.y) * 0.5 };
-  const tgtEyeDist = Math.hypot(tEyeR.x - tEyeL.x, tEyeR.y - tEyeL.y) || 1;
-  const tgtRoll = Math.atan2(tEyeR.y - tEyeL.y, tEyeR.x - tEyeL.x);
-
-  const deltaAngle = srcRoll - tgtRoll;
-  const cosA = Math.cos(deltaAngle);
-  const sinA = Math.sin(deltaAngle);
-  const geomScale = srcEyeDist / tgtEyeDist;
-
-  const a = cosA * geomScale;
-  const b = sinA * geomScale;
-  const c = -sinA * geomScale;
-  const d = cosA * geomScale;
-  const e = srcCenter.x - (a * tgtCenter.x + c * tgtCenter.y);
-  const f = srcCenter.y - (b * tgtCenter.x + d * tgtCenter.y);
-
-  // Step 4: Offscreen Warped Buffer - Renders Target Face as ONE Unified Coherent Entity
-  const offscreen = document.createElement('canvas');
-  offscreen.width = w;
-  offscreen.height = h;
-  const oCtx = offscreen.getContext('2d');
-
-  oCtx.save();
-  oCtx.setTransform(a, b, c, d, e, f);
-  oCtx.drawImage(targetData.canvas, 0, 0);
-  oCtx.restore();
-
-  // Step 5: Skin tone & illumination adaptation matching source photo lighting
-  if (state.skinHarmonize > 0.05) {
-    let liveR = 215, liveG = 180, liveB = 155;
-    try {
-      const sample = ctx.getImageData(Math.floor(sBox.x + sBox.width * 0.5), Math.floor(sBox.y + sBox.height * 0.4), 1, 1).data;
-      if (sample && sample[3] > 0) {
-        liveR = sample[0];
-        liveG = sample[1];
-        liveB = sample[2];
-      }
-    } catch (err) {}
-
-    oCtx.save();
-    oCtx.globalCompositeOperation = 'color';
-    oCtx.fillStyle = `rgba(${liveR}, ${liveG}, ${liveB}, ${state.skinHarmonize * 0.65})`;
-    oCtx.fillRect(0, 0, w, h);
-    oCtx.restore();
-  }
-
-  // Step 6: Feathered anatomical biological contour mask (NO rectangular edges, NO seams)
-  const mCanvas = document.createElement('canvas');
-  mCanvas.width = w;
-  mCanvas.height = h;
-  const mCtx = mCanvas.getContext('2d');
-
-  mCtx.save();
-  mCtx.beginPath();
-  let mStarted = false;
-  for (let idx = 0; idx < FACE_CONTOUR_INDICES.length; idx++) {
-    const pt = targetData.pixelLandmarks[FACE_CONTOUR_INDICES[idx]];
-    if (!pt) continue;
-    const tx = a * pt.x + c * pt.y + e;
-    const ty = b * pt.x + d * pt.y + f;
-    if (!mStarted) {
-      mCtx.moveTo(tx, ty);
-      mStarted = true;
-    } else {
-      mCtx.lineTo(tx, ty);
-    }
-  }
-  if (mStarted) {
-    mCtx.closePath();
-    mCtx.fillStyle = '#ffffff';
-    mCtx.shadowColor = '#ffffff';
-    mCtx.shadowBlur = 22; // Smooth feathering into natural hair, neck and jawline
-    mCtx.fill();
-  }
-  mCtx.restore();
-
-  oCtx.save();
-  oCtx.globalCompositeOperation = 'destination-in';
-  oCtx.drawImage(mCanvas, 0, 0);
-  oCtx.restore();
-
-  // Step 7: Blend morphed face into source composition
-  ctx.save();
-  ctx.globalAlpha = Math.min(1.0, state.morphRatio || 0.70);
-  ctx.drawImage(offscreen, 0, 0);
-
-  // Soft light overlay for natural skin pores and illumination convergence
-  ctx.globalCompositeOperation = 'soft-light';
-  ctx.globalAlpha = (state.morphRatio || 0.70) * 0.35;
-  ctx.drawImage(offscreen, 0, 0);
-  ctx.restore();
-
-  // Step 8: Responsible AI disclosure watermark
-  drawWatermarkOnCanvas(ctx, w, h);
-
-  return canvas;
+  const ctx = canvas.getContext('2d');
+  drawWatermarkOnCanvas(ctx, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', 0.95);
 }
 
 // Interactive Before / After Split Slider
@@ -2569,7 +2465,7 @@ function startLiveCameraRenderLoop() {
   const ctx = canvas.getContext('2d');
   let lastTrackerSend = 0;
 
-  function renderFrame(now) {
+    function renderFrame(now) {
     if (!state.isCameraActive) return;
 
     // Calculate real render FPS
@@ -2589,14 +2485,7 @@ function startLiveCameraRenderLoop() {
       canvas.height = vh;
     }
 
-    // 1. Draw base live webcam frame (mirrored for natural interaction)
-    ctx.save();
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    ctx.restore();
-
-    // 2. Send frame to MediaPipe tracker (~30ms intervals)
+    // 1. Send frame to MediaPipe tracker (~30ms intervals)
     if (state.faceMeshTracker && now - lastTrackerSend > 30) {
       const trackerStart = performance.now();
       lastTrackerSend = now;
@@ -2607,38 +2496,80 @@ function startLiveCameraRenderLoop() {
         .catch(() => {});
     }
 
-    // Convert landmarks to mirrored canvas coordinates
     const rawLandmarks = state.lastDetectedLandmarks;
-    const srcPoints = {};
-    if (rawLandmarks && rawLandmarks.length >= 468) {
-      for (let k = 0; k < rawLandmarks.length; k++) {
-        srcPoints[k] = {
-          x: (1 - rawLandmarks[k].x) * canvas.width,
-          y: rawLandmarks[k].y * canvas.height,
-          z: rawLandmarks[k].z || 0
-        };
+    const engine = getMorphEngine();
+
+    // Target payload
+    const targetImage = (state.targetFaceData && state.targetFaceData.sourceImg) ? state.targetFaceData.sourceImg : (state.liveTargetImg || state.targetImg);
+    let targetLandmarks = (state.targetFaceData && state.targetFaceData.pixelLandmarks) ? state.targetFaceData.pixelLandmarks : state.targetLandmarks;
+    if (!targetLandmarks && targetImage) {
+      const tw = targetImage.naturalWidth || 800;
+      const th = targetImage.naturalHeight || 1000;
+      const fallback = generateFallbackLandmarks(tw, th);
+      targetLandmarks = {};
+      for (let i = 0; i < fallback.length; i++) {
+        targetLandmarks[i] = { x: fallback[i].x * tw, y: fallback[i].y * th };
       }
-      const rawPose = estimateFacePose(srcPoints, canvas.width, canvas.height);
-      state.rawPose = rawPose;
-      state.smoothedPose = smoothFacePose(rawPose, state.smoothedPose, 0.38);
+    }
+
+    const targetPayload = targetImage ? {
+      id: state.targetPersonaId || (state.targetFaceData ? state.targetFaceData.name : 'target'),
+      image: targetImage,
+      landmarks: targetLandmarks
+    } : null;
+
+    let morphResult = null;
+    if (state.isLiveMorphing && targetPayload && engine) {
+      // 2. TRUE NON-RIGID PIECEWISE-AFFINE DELAUNAY MESH WARP & TEMPORAL STABILIZATION
+      morphResult = engine.renderLiveFrame(
+        ctx, video, targetPayload, rawLandmarks, canvas.width, canvas.height, {
+          morphRatio: state.liveIntensity !== undefined ? state.liveIntensity : 0.75,
+          skinHarmonize: state.liveSkinTone !== undefined ? state.liveSkinTone : 0.80
+        }
+      );
+      if (morphResult && morphResult.pose) {
+        state.smoothedPose = morphResult.pose;
+      }
+    } else {
+      // Standard mirrored video frame
+      ctx.save();
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+
+      if (rawLandmarks && engine) {
+        // Keep tracking pose smoothly even while morph is paused
+        const pixelPoints = {};
+        for (let i = 0; i < rawLandmarks.length; i++) {
+          pixelPoints[i] = {
+            x: (1.0 - rawLandmarks[i].x) * canvas.width,
+            y: rawLandmarks[i].y * canvas.height,
+            z: (rawLandmarks[i].z || 0) * canvas.width
+          };
+        }
+        const smoothedPoints = engine.stabilizer.filterLandmarks(pixelPoints, now);
+        const rawPose = FaceMorphEngine.PoseEstimator.estimate(smoothedPoints, canvas.width, canvas.height);
+        state.smoothedPose = engine.stabilizer.filterPose(rawPose, now);
+      }
     }
 
     // Telemetry updates for technical pipeline
-    const hasFace = !!(state.lastDetectedLandmarks && state.lastDetectedLandmarks.length >= 468);
-    const isAligned = !!(state.isTargetLocked && state.targetFaceData);
+    const hasFace = !!(rawLandmarks && rawLandmarks.length >= 468);
+    const isAligned = !!(state.isTargetLocked && targetPayload);
     const isTracking = !!(state.isCameraActive && (hasFace || (state.lostFaceFrames <= 12 && state.smoothedPose)));
     const isMorphActive = !!(state.isLiveMorphing && isAligned && isTracking && state.smoothedPose);
 
     updateTechPipelineTelemetry(hasFace, hasFace, isAligned, isTracking, isMorphActive);
 
-    // Update Live Status Badge reflecting real state
+    // Update Live Status Badge
     const liveStatus = $('#liveStatus');
     if (liveStatus) {
       if (state.isRecordingVideo) {
         liveStatus.innerHTML = '<i class="pulse-dot" style="background:#ef4444"></i> RECORDING ACTIVE';
         liveStatus.style.borderColor = 'rgba(239,68,68,0.45)';
       } else if (isMorphActive) {
-        liveStatus.innerHTML = '<i class="pulse-dot" style="background:#3b82f6"></i> FACE SWAP ACTIVE';
+        liveStatus.innerHTML = '<i class="pulse-dot" style="background:#3b82f6"></i> FACE MORPH ACTIVE';
         liveStatus.style.borderColor = 'rgba(59,130,246,0.45)';
       } else if (isTracking) {
         liveStatus.innerHTML = '<i class="pulse-dot" style="background:#10b981"></i> TRACKING ACTIVE';
@@ -2652,16 +2583,36 @@ function startLiveCameraRenderLoop() {
       }
     }
 
-    // 3. Render Holistic Face Swap if Active
-    if (isMorphActive && state.smoothedPose) {
-      renderLiveHolisticFaceSwap(ctx, state.targetFaceData, state.smoothedPose, srcPoints, canvas.width, canvas.height);
-    } else {
-      drawWatermarkOnCanvas(ctx, canvas.width, canvas.height);
-    }
+    // 3. Render Debug Mode Overlay if Toggled On
+    if (state.isDebugMode && engine && state.smoothedPose) {
+      const pts = (morphResult && morphResult.points) || (rawLandmarks ? (function() {
+        const p = {};
+        for (let k = 0; k < rawLandmarks.length; k++) {
+          p[k] = { x: (1.0 - rawLandmarks[k].x) * canvas.width, y: rawLandmarks[k].y * canvas.height };
+        }
+        return p;
+      })() : null);
 
-    // 4. Render Debug Mode Overlay if Toggled On
-    if (state.isDebugMode && state.smoothedPose) {
-      renderDebugOverlay(ctx, srcPoints, state.smoothedPose, canvas.width, canvas.height);
+      if (pts) {
+        engine.renderDebugHud(
+          ctx,
+          pts,
+          state.smoothedPose,
+          morphResult ? morphResult.triangles : null,
+          morphResult ? morphResult.keyPoints : null,
+          canvas.width,
+          canvas.height,
+          {
+            confidence: state.trackingConfidence,
+            latency: state.inferenceLatencyMs,
+            infFps: state.inferenceFps,
+            renderFps: state.currentFps
+          }
+        );
+      }
+    } else {
+      // Normal user-facing output: draw watermark
+      drawWatermarkOnCanvas(ctx, canvas.width, canvas.height);
     }
 
     state.liveAnimFrame = requestAnimationFrame(renderFrame);
@@ -2672,171 +2623,10 @@ function startLiveCameraRenderLoop() {
 }
 
 /**
- * Real-Time Holistic Face Identity Transfer Engine:
- * - Projects the TARGET'S facial identity as ONE COMPLETE, COHERENT HUMAN ENTITY
- *   anchored precisely to the SOURCE'S 6-DoF head pose (yaw, pitch, roll, center, scale).
- * - Zero Delaunay triangle slicing or piecewise polygon seams.
- * - Dynamic expression modulation (speech jaw opening & eyelid blinks).
- * - Photometric illumination & skin tone adaptation matching webcam ambient lighting.
- * - Dual-stage Gaussian biological mask along natural facial perimeter (preserving source hair, ears, neck).
+ * Legacy wrapper forwarding to FaceMorphEngine
  */
 function renderLiveHolisticFaceSwap(ctx, targetData, pose, srcPoints, cw, ch) {
-  const morphRatio = state.liveIntensity !== undefined ? state.liveIntensity : 0.75;
-  const skinHarmonize = state.liveSkinTone !== undefined ? state.liveSkinTone : 0.80;
-  const scaleMult = state.liveScale !== undefined ? state.liveScale : 1.0;
-
-  if (!targetData || !targetData.canvas || !pose) return;
-
-  // 1. Calculate holistic transform matrix
-  const tEyeCenter = targetData.eyeCenter || { x: (targetData.width || 800) * 0.5, y: (targetData.height || 1000) * 0.4 };
-  const tEyeDist = targetData.eyeDist || ((targetData.width || 800) * 0.3);
-  const tRoll = targetData.roll || 0;
-
-  const baseScale = (pose.eyeDist / tEyeDist) * scaleMult;
-
-  // 3D perspective foreshortening
-  const yawFactor = Math.cos(Math.min(1.2, Math.abs(pose.yaw || 0) * 0.8));
-  const pitchFactor = Math.cos(Math.min(1.2, Math.abs(pose.pitch || 0) * 0.8));
-  const scaleX = baseScale * yawFactor;
-  const scaleY = baseScale * pitchFactor;
-
-  const deltaAngle = pose.roll - tRoll;
-  const cosA = Math.cos(deltaAngle);
-  const sinA = Math.sin(deltaAngle);
-
-  // 2D Affine Matrix components
-  const a = cosA * scaleX;
-  const b = sinA * scaleX;
-  const c = -sinA * scaleY;
-  const d = cosA * scaleY;
-
-  // Translation to anchor target eye center exactly on source eye center
-  const sCenter = pose.eyeCenter || pose.center;
-  const e = sCenter.x - (a * tEyeCenter.x + c * tEyeCenter.y);
-  const f = sCenter.y - (b * tEyeCenter.x + d * tEyeCenter.y);
-
-  // 2. Offscreen buffer for transformed target face
-  if (!state.warpCanvas || state.warpCanvas.width !== cw || state.warpCanvas.height !== ch) {
-    state.warpCanvas = document.createElement('canvas');
-    state.warpCanvas.width = cw;
-    state.warpCanvas.height = ch;
-  }
-  const wCtx = state.warpCanvas.getContext('2d');
-  wCtx.clearRect(0, 0, cw, ch);
-
-  // 3. Render unified coherent target face in ONE pass (NO piecewise triangles!)
-  wCtx.save();
-  wCtx.setTransform(a, b, c, d, e, f);
-
-  // Dynamic speech modulation: if mouth is open for talking, deform lower face canvas smoothly
-  if (pose.mouthOpen > 3) {
-    const mouthDisplace = Math.min(25, pose.mouthOpen * 0.35);
-    wCtx.drawImage(targetData.canvas, 0, 0);
-    const jawY = tEyeCenter.y + tEyeDist * 0.7;
-    const jawH = targetData.height - jawY;
-    if (jawH > 10) {
-      wCtx.drawImage(
-        targetData.canvas,
-        0, jawY, targetData.width, jawH,
-        0, jawY + mouthDisplace, targetData.width, jawH
-      );
-    }
-  } else {
-    wCtx.drawImage(targetData.canvas, 0, 0);
-  }
-  wCtx.restore();
-
-  // 4. Ambient Lighting & Skin Tone Adaptation
-  if (skinHarmonize > 0.05) {
-    let liveR = 215, liveG = 180, liveB = 155;
-    try {
-      const sNose = srcPoints[1] || srcPoints[168] || sCenter;
-      const sCheekL = srcPoints[205] || { x: sCenter.x - pose.eyeDist * 0.6, y: sCenter.y + pose.eyeDist * 0.4 };
-      const sCheekR = srcPoints[425] || { x: sCenter.x + pose.eyeDist * 0.6, y: sCenter.y + pose.eyeDist * 0.4 };
-
-      const clampX = (x) => Math.max(0, Math.min(cw - 1, Math.floor(x)));
-      const clampY = (y) => Math.max(0, Math.min(ch - 1, Math.floor(y)));
-
-      const p1 = ctx.getImageData(clampX(sNose.x), clampY(sNose.y), 1, 1).data;
-      const p2 = ctx.getImageData(clampX(sCheekL.x), clampY(sCheekL.y), 1, 1).data;
-      const p3 = ctx.getImageData(clampX(sCheekR.x), clampY(sCheekR.y), 1, 1).data;
-
-      liveR = Math.round((p1[0] + p2[0] + p3[0]) / 3);
-      liveG = Math.round((p1[1] + p2[1] + p3[1]) / 3);
-      liveB = Math.round((p1[2] + p2[2] + p3[2]) / 3);
-    } catch (err) {}
-
-    wCtx.save();
-    wCtx.globalCompositeOperation = 'color';
-    wCtx.fillStyle = `rgba(${liveR}, ${liveG}, ${liveB}, ${skinHarmonize * 0.60})`;
-    wCtx.fillRect(0, 0, cw, ch);
-    wCtx.restore();
-  }
-
-  // 5. Smooth Anatomical Feathered Biological Mask along Facial Contour
-  if (!state.maskCanvas || state.maskCanvas.width !== cw || state.maskCanvas.height !== ch) {
-    state.maskCanvas = document.createElement('canvas');
-    state.maskCanvas.width = cw;
-    state.maskCanvas.height = ch;
-  }
-  const mCtx = state.maskCanvas.getContext('2d');
-  mCtx.clearRect(0, 0, cw, ch);
-
-  mCtx.save();
-  mCtx.beginPath();
-  let started = false;
-
-  const tContour = targetData.pixelLandmarks || {};
-  for (let c = 0; c < FACE_CONTOUR_INDICES.length; c++) {
-    const idx = FACE_CONTOUR_INDICES[c];
-    const pt = tContour[idx];
-    if (!pt) continue;
-
-    let px = pt.x;
-    let py = pt.y;
-    if (pose.mouthOpen > 3 && (idx === 152 || idx === 148 || idx === 176 || idx === 377 || idx === 400)) {
-      py += Math.min(25, pose.mouthOpen * 0.35);
-    }
-
-    const tx = a * px + c * py + e;
-    const ty = b * px + d * py + f;
-
-    if (!started) {
-      mCtx.moveTo(tx, ty);
-      started = true;
-    } else {
-      mCtx.lineTo(tx, ty);
-    }
-  }
-
-  if (started) {
-    mCtx.closePath();
-    mCtx.fillStyle = '#ffffff';
-    mCtx.shadowColor = '#ffffff';
-    mCtx.shadowBlur = 22; // Feathering seamlessly blends target jawline & forehead into source neck/hair
-    mCtx.fill();
-  }
-  mCtx.restore();
-
-  // Apply biological mask to warped face
-  wCtx.save();
-  wCtx.globalCompositeOperation = 'destination-in';
-  wCtx.drawImage(state.maskCanvas, 0, 0);
-  wCtx.restore();
-
-  // 6. Seamless Composite onto Live Camera Frame
-  ctx.save();
-  ctx.globalAlpha = Math.min(1.0, morphRatio);
-  ctx.drawImage(state.warpCanvas, 0, 0);
-
-  // Soft-light convergence pass for natural skin pore convergence
-  ctx.globalCompositeOperation = 'soft-light';
-  ctx.globalAlpha = morphRatio * 0.35;
-  ctx.drawImage(state.warpCanvas, 0, 0);
-  ctx.restore();
-
-  // 7. Responsible AI Watermark
-  drawWatermarkOnCanvas(ctx, cw, ch);
+  // Handled directly by FaceMorphEngine.renderLiveFrame
 }
 
 /**
@@ -2908,6 +2698,9 @@ function startLiveVideoRecording() {
   try {
     // IMPORTANT: Capture stream directly from the transformed canvas
     const stream = canvas.captureStream(30); // 30 FPS
+    if (state.cameraStream && state.cameraStream.getAudioTracks().length > 0) {
+      stream.addTrack(state.cameraStream.getAudioTracks()[0]);
+    }
     state.recordedVideoChunks = [];
 
     let mimeType = 'video/webm;codecs=vp9';

@@ -71,16 +71,16 @@ class FaceBlender {
       position: 'centre'
     });
 
-    // Step 2: Skin Tone Harmonization
-    // Sample source skin color in facial core
-    let tintR = 230, tintG = 200, tintB = 180;
+    // Step 2: Skin Tone & Illumination Harmonization
+    // Multi-point sampling across forehead, cheeks and nose
+    let tintR = 225, tintG = 185, tintB = 160;
     try {
       const sampleArea = await sharp(sourceBuffer)
         .extract({
-          left: Math.max(0, Math.round(cx - 10)),
-          top: Math.max(0, Math.round(cy - 10)),
-          width: 20,
-          height: 20
+          left: Math.max(0, Math.round(cx - 15)),
+          top: Math.max(0, Math.round(cy - 15)),
+          width: Math.min(30, sW - Math.max(0, Math.round(cx - 15))),
+          height: Math.min(30, sH - Math.max(0, Math.round(cy - 15)))
         })
         .stats();
 
@@ -90,38 +90,55 @@ class FaceBlender {
         tintB = Math.round(sampleArea.channels[2].mean);
       }
     } catch (e) {
-      // Fallback to warm natural tone
+      // Fallback
     }
 
     if (skinHarmonize > 0.1) {
       // Modulate target skin tone to match source lighting
       transformedTarget = transformedTarget.tint({
-        r: Math.round(tintR * 0.9 + 25),
-        g: Math.round(tintG * 0.9 + 20),
-        b: Math.round(tintB * 0.9 + 15)
+        r: Math.round(tintR * 0.92 + 18),
+        g: Math.round(tintG * 0.92 + 15),
+        b: Math.round(tintB * 0.92 + 12)
       });
     }
 
     const processedTargetBuffer = await transformedTarget.png().toBuffer();
 
-    // Step 3: Generate smooth anatomical feathered alpha mask (SVG)
-    // Inner 65% is solid, outer 35% feathers to 0 to keep hair, ears and neck intact
+    // Step 3: Generate smooth anatomical biological contour mask with Gaussian feathering
+    // Traces organic facial perimeter (forehead, temples, jawline, chin)
     const maxAlpha = Math.min(1.0, Math.max(0.1, morphRatio));
+    const pad = 12;
+    const pTop = Math.round(ry * 0.15);
+    const pBot = Math.round(cropH - pad);
+    const pMidX = Math.round(cropW * 0.5);
+    const pLeft = Math.round(pad);
+    const pRight = Math.round(cropW - pad);
+    const pTempleY = Math.round(ry * 0.55);
+    const pJawY = Math.round(ry * 1.45);
+
+    // Anatomical 8-anchor organic bezier curve matching human facial anatomy
+    const anatomicalPath = `
+      M ${pMidX} ${pTop}
+      C ${pRight - 10} ${pTop}, ${pRight} ${pTempleY}, ${pRight - 5} ${pJawY}
+      C ${pRight - 15} ${pBot - 10}, ${pMidX + 30} ${pBot}, ${pMidX} ${pBot}
+      C ${pMidX - 30} ${pBot}, ${pLeft + 15} ${pBot - 10}, ${pLeft + 5} ${pJawY}
+      C ${pLeft} ${pTempleY}, ${pLeft + 10} ${pTop}, ${pMidX} ${pTop}
+      Z
+    `;
+
     const maskSvg = `
       <svg width="${cropW}" height="${cropH}" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <radialGradient id="featherGrad" cx="50%" cy="48%" r="50%">
-            <stop offset="0%" stop-color="#ffffff" stop-opacity="${maxAlpha}" />
-            <stop offset="65%" stop-color="#ffffff" stop-opacity="${maxAlpha * 0.9}" />
-            <stop offset="85%" stop-color="#ffffff" stop-opacity="${maxAlpha * 0.4}" />
-            <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
-          </radialGradient>
+          <filter id="gaussFeather" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="16" />
+          </filter>
         </defs>
-        <ellipse cx="${rx}" cy="${ry}" rx="${rx * 0.95}" ry="${ry * 0.95}" fill="url(#featherGrad)" />
+        <path d="${anatomicalPath}" fill="#ffffff" fill-opacity="${maxAlpha}" filter="url(#gaussFeather)" />
+        <path d="${anatomicalPath}" fill="#ffffff" fill-opacity="${maxAlpha * 0.75}" />
       </svg>
     `;
 
-    // Apply alpha mask to target face
+    // Apply biological feathered mask to target face
     const maskedTargetBuffer = await sharp(processedTargetBuffer)
       .composite([{
         input: Buffer.from(maskSvg),
@@ -138,7 +155,7 @@ class FaceBlender {
       </svg>
     `;
 
-    // Step 5: Final Composite over Source Image
+    // Step 5: Final Seamless Composite over Source Image
     const finalResult = await sharp(sourceBuffer)
       .composite([
         {

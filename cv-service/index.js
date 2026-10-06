@@ -10,6 +10,7 @@ const IdentityExtractor = require('./identity/identityExtractor');
 const FaceSwapEngine = require('./swap/faceSwapEngine');
 const FaceRestorer = require('./restoration/faceRestorer');
 const { MaskGenerator, FACE_CONTOUR_INDICES } = require('./segmentation/maskGenerator');
+const FaceMorphEngine = require('../public/js/faceMorphEngine');
 
 module.exports = {
   FaceDetector,
@@ -18,5 +19,6 @@ module.exports = {
   FaceSwapEngine,
   FaceRestorer,
   MaskGenerator,
-  FACE_CONTOUR_INDICES
+  FACE_CONTOUR_INDICES,
+  FaceMorphEngine
 };
